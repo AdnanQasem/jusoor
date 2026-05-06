@@ -396,13 +396,32 @@ function Hero({ onNavigate }) {
                   className="flex flex-col sm:flex-row gap-3"
                 >
                   <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => onNavigate('scholarships')}
-                    className="px-7 py-3.5 bg-blue-700 text-white rounded-xl text-base font-bold hover:bg-blue-800 transition-colors flex items-center justify-center gap-2"
+                    className="relative px-8 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 text-white rounded-xl text-lg font-bold hover:from-blue-700 hover:via-blue-800 hover:to-blue-700 transition-all duration-300 flex items-center justify-center gap-2 btn-glow btn-shimmer overflow-hidden"
                   >
-                    استعرض المنح الآن
-                    <ArrowLeft className="w-4 h-4" />
+                    <motion.span
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="relative z-10"
+                    >
+                      استعرض المنح الآن
+                    </motion.span>
+                    <motion.span
+                      animate={{ 
+                        x: [0, -5, 0],
+                        rotate: [0, -10, 0]
+                      }}
+                      transition={{ 
+                        duration: 1.5, 
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                      className="w-5 h-5 relative z-10"
+                    >
+                      <ArrowLeft className="w-full h-full" />
+                    </motion.span>
                   </motion.button>
 
                   <motion.button
@@ -438,33 +457,42 @@ function Hero({ onNavigate }) {
         </div>
       </div>
 
-      <div className="border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="border-t border-slate-100 bg-gradient-to-b from-white to-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.7 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8"
           >
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + index * 0.08 }}
-                  className="flex items-center gap-3"
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -5, scale: 1.05 }}
+                  className="group relative bg-white rounded-2xl p-5 shadow-lg shadow-blue-100/50 hover:shadow-xl hover:shadow-blue-200/60 transition-all duration-300 border border-blue-50"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-blue-700" />
+                  <div className="flex flex-col items-center text-center gap-3">
+                    <motion.div 
+                      whileHover={{ rotate: 12, scale: 1.1 }}
+                      className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center flex-shrink-0 group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300 shadow-sm"
+                    >
+                      <Icon className="w-7 h-7 text-blue-700 group-hover:text-blue-800 transition-colors" />
+                    </motion.div>
+                    <div>
+                      <p className="text-2xl md:text-3xl font-black text-slate-900 mb-1">
+                        <AnimatedCounter target={stat.number} suffix={stat.suffix} />
+                      </p>
+                      <p className="text-sm text-slate-600 font-medium">{stat.label}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-slate-900">
-                      <AnimatedCounter target={stat.number} suffix={stat.suffix} />
-                    </p>
-                    <p className="text-xs text-slate-500">{stat.label}</p>
-                  </div>
+                  
+                  {/* Subtle glow effect on hover */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-400/0 to-blue-600/0 group-hover:from-blue-400/5 group-hover:to-blue-600/5 transition-all duration-500 pointer-events-none" />
                 </motion.div>
               );
             })}
@@ -488,11 +516,13 @@ function ServicesSection({ onSelectService }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="text-blue-600 font-medium mb-4 block">خدماتنا</span>
+            <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-bold mb-4">
+              خدماتنا
+            </span>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-serif">
               باقات متكاملة لتحقيق حلمك
             </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <p className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed">
               اختر الخدمة التي تناسب احتياجاتك، وفريقنا المتخصص سيتولى إعداد أوراقك باحترافية
             </p>
           </motion.div>
@@ -559,6 +589,7 @@ function ServicesSection({ onSelectService }) {
 function ScholarshipsSection() {
   const [filter, setFilter] = useState('الكل');
   const [searchQuery, setSearchQuery] = useState('');
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   const filters = ['الكل', 'البكالوريوس', 'الماجستير', 'الدكتوراه'];
 
@@ -576,118 +607,313 @@ function ScholarshipsSection() {
     return diffDays;
   };
 
+  const getUrgencyColor = (days) => {
+    if (days < 7) return 'from-red-500 to-orange-500';
+    if (days < 30) return 'from-yellow-500 to-orange-500';
+    return 'from-green-500 to-emerald-500';
+  };
+
   return (
-    <section id="scholarships" className="py-20 bg-slate-50">
+    <section id="scholarships" className="py-24 bg-gradient-to-b from-white via-slate-50 to-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        {/* Header */}
+        <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
           >
-            <span className="text-blue-600 font-medium mb-4 block">المنح المتاحة</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-serif">
-              استكشف فرصك الدراسية
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <motion.span 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="inline-block px-5 py-2 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 rounded-full text-sm font-bold mb-5 shadow-sm"
+            >
+              المنح المتاحة
+            </motion.span>
+            <motion.h2 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-3xl md:text-5xl font-bold text-slate-900 mb-5 font-serif"
+            >
+              استكشف <span className="gradient-text-blue">فرصك الدراسية</span>
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed"
+            >
               قائمة محدثة بأحدث المنح الدراسية المتاحة للطلاب الفلسطينيين
-            </p>
+            </motion.p>
+            
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="w-24 h-1 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full mx-auto mt-6"
+            />
           </motion.div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex flex-wrap gap-2">
-            {filters.map((f) => (
-              <button
+        {/* Filters & Search */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="flex flex-col md:flex-row gap-4 mb-12"
+        >
+          {/* Filter Pills */}
+          <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+            {filters.map((f, index) => (
+              <motion.button
                 key={f}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.6 + index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === f
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-100'
-                  }`}
+                className={`relative px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 overflow-hidden ${
+                  filter === f
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-300/50'
+                    : 'bg-white text-slate-600 hover:text-blue-700 shadow-md hover:shadow-lg border border-slate-200'
+                }`}
               >
-                {f}
-              </button>
+                {filter === f && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-blue-600/20 animate-pulse" />
+                )}
+                <span className="relative z-10">{f}</span>
+              </motion.button>
             ))}
           </div>
 
-          <div className="relative flex-1">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          {/* Search Bar */}
+          <motion.div 
+            className="relative flex-1 max-w-md mx-auto md:mx-0"
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400">
+              <Search />
+            </div>
             <input
               type="text"
-              placeholder="ابحث عن منحة..."
+              placeholder="ابحث عن منحة أو جامعة..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pr-10 pl-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pr-12 pl-4 py-3 bg-white border-2 border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-400 transition-all duration-300 shadow-md hover:shadow-lg"
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Results Count */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.8 }}
+          className="mb-6 text-center md:text-right"
+        >
+          <p className="text-slate-600">
+            تم العثور على <span className="font-bold text-blue-700">{filteredScholarships.length}</span> منحة
+          </p>
+        </motion.div>
 
         {/* Scholarships Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
           {filteredScholarships.map((scholarship, index) => {
             const daysLeft = getDaysLeft(scholarship.deadline);
+            const isUrgent = scholarship.urgent || daysLeft < 30;
 
             return (
               <motion.div
                 key={scholarship.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 border border-slate-200 hover:border-blue-300 transition-all card-hover"
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ delay: index * 0.1, duration: 0.5, type: "spring", stiffness: 100 }}
+                onMouseEnter={() => setHoveredCard(scholarship.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+                className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-200/50 transition-all duration-500 border border-slate-100"
               >
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">{scholarship.logo}</div>
-
-                  <div className="flex-1 text-right">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900">{scholarship.name}</h3>
-                        <p className="text-sm text-slate-500">{scholarship.nameEn}</p>
-                      </div>
-
-                      {scholarship.urgent && daysLeft < 30 && (
-                        <div className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                          <AlertCircle className="w-3 h-3" />
-                          عاجل
-                        </div>
-                      )}
+                {/* Card Background Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-blue-50/0 to-blue-50/50 group-hover:from-blue-50/50 group-hover:via-blue-50/30 group-hover:to-blue-50/100 transition-all duration-500" />
+                
+                {/* Urgent Badge */}
+                {isUrgent && (
+                  <motion.div
+                    initial={{ scale: 0, rotate: -45 }}
+                    whileInView={{ scale: 1, rotate: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 + index * 0.1, type: "spring" }}
+                    className="absolute top-4 left-4 z-20"
+                  >
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full text-xs font-bold shadow-lg shadow-red-300/50">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>عاجل</span>
                     </div>
+                  </motion.div>
+                )}
 
-                    <p className="text-slate-600 mb-3">{scholarship.university}</p>
+                {/* Top Decoration */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm">
-                        {scholarship.type}
-                      </span>
-                      <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">
-                        {scholarship.amount}
-                      </span>
-                      {scholarship.fields.map((field, i) => (
-                        <span key={i} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm">
-                          {field}
+                <div className="relative p-6 lg:p-7">
+                  <div className="flex items-start gap-5">
+                    {/* Logo with Animation */}
+                    <motion.div 
+                      initial={{ scale: 0, rotate: -180 }}
+                      whileInView={{ scale: 1, rotate: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.6 + index * 0.1, type: "spring", stiffness: 200 }}
+                      whileHover={{ scale: 1.1, rotate: 12 }}
+                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-3xl shadow-md group-hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
+                    >
+                      {scholarship.logo}
+                    </motion.div>
+
+                    <div className="flex-1 text-right">
+                      {/* Title */}
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.7 + index * 0.1 }}
+                      >
+                        <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-700 transition-colors duration-300">
+                          {scholarship.name}
+                        </h3>
+                        <p className="text-sm text-slate-500 font-medium">{scholarship.nameEn}</p>
+                      </motion.div>
+
+                      {/* University */}
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.8 + index * 0.1 }}
+                        className="text-slate-600 mt-3 text-sm flex items-center gap-2"
+                      >
+                        <Building2 className="w-4 h-4 text-blue-500" />
+                        {scholarship.university}
+                      </motion.p>
+
+                      {/* Tags */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.9 + index * 0.1 }}
+                        className="flex flex-wrap gap-2 mt-4"
+                      >
+                        <span className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-300/50">
+                          {scholarship.type}
                         </span>
-                      ))}
-                    </div>
+                        <span className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl text-xs font-bold shadow-md shadow-green-300/50">
+                          {scholarship.amount}
+                        </span>
+                        {scholarship.fields.slice(0, 2).map((field, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-medium border border-slate-200">
+                            {field}
+                          </span>
+                        ))}
+                      </motion.div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                      <div className={`flex items-center gap-2 text-sm ${daysLeft < 7 ? 'text-red-600' : 'text-slate-600'}`}>
-                        <Clock className="w-4 h-4" />
-                        <span>الموعد: {daysLeft > 0 ? `${daysLeft} يوم` : 'منتهي'}</span>
-                      </div>
+                      {/* Footer */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 1 + index * 0.1 }}
+                        className="flex items-center justify-between pt-5 mt-5 border-t border-slate-100"
+                      >
+                        {/* Deadline */}
+                        <motion.div 
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl ${
+                            daysLeft < 7 
+                              ? 'bg-red-50 text-red-700' 
+                              : daysLeft < 30 
+                              ? 'bg-yellow-50 text-yellow-700'
+                              : 'bg-slate-50 text-slate-600'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          <motion.div
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            <Clock className="w-4 h-4" />
+                          </motion.div>
+                          <span className="text-sm font-bold">
+                            {daysLeft > 0 ? `${daysLeft} يوم` : 'منتهي'}
+                          </span>
+                        </motion.div>
 
-                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                        قدم عبر أمديست (٧٠₪)
-                      </button>
+                        {/* CTA Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.05, x: -5 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-300/50 hover:shadow-blue-400/70 transition-all duration-300 flex items-center gap-2 group/btn"
+                        >
+                          <span>تقديم</span>
+                          <motion.span
+                            animate={{ x: [0, -3, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                          </motion.span>
+                        </motion.button>
+                      </motion.div>
                     </div>
                   </div>
                 </div>
+
+                {/* Hover Glow Effect */}
+                <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ filter: 'blur(20px)' }} />
               </motion.div>
             );
           })}
         </div>
+
+        {/* Empty State */}
+        {filteredScholarships.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-16"
+          >
+            <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="w-10 h-10 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">لا توجد نتائج</h3>
+            <p className="text-slate-600">جرب تغيير معايير البحث أو الفلتر</p>
+          </motion.div>
+        )}
+
+        {/* View All CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 1.2 }}
+          className="text-center mt-12"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-700 rounded-full font-bold text-lg hover:bg-blue-50 transition-all duration-300 shadow-lg hover:shadow-xl"
+          >
+            عرض جميع المنح
+          </motion.button>
+        </motion.div>
       </div>
     </section>
   );
@@ -696,56 +922,207 @@ function ScholarshipsSection() {
 // How It Works Section
 function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="py-20 bg-white">
+    <section id="how-it-works" className="py-24 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
           >
-            <span className="text-blue-600 font-medium mb-4 block">كيف نعمل</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-serif">
-              رحلتك نحو القبول في ٤ خطوات
-            </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <motion.span 
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="inline-block px-5 py-2 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 rounded-full text-sm font-bold mb-5 shadow-sm"
+            >
+              كيف نعمل
+            </motion.span>
+            <motion.h2 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-3xl md:text-5xl font-bold text-slate-900 mb-5 font-serif"
+            >
+              رحلتك نحو القبول في <span className="gradient-text-blue">٤ خطوات</span>
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed"
+            >
               نبسط لك عملية التقديم على المنح بخطوات واضحة وسهلة
-            </p>
+            </motion.p>
+            
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="w-24 h-1 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full mx-auto mt-6"
+            />
           </motion.div>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-8">
-          {STEPS.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-                className="relative text-center"
-              >
-                {index < STEPS.length - 1 && (
-                  <div className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-slate-200 -z-10">
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-slate-300 rounded-full" />
+        <div className="relative">
+          {/* Connection Line - Desktop */}
+          <div className="hidden lg:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-200 opacity-30" />
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+            {STEPS.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ delay: index * 0.15, duration: 0.6, type: "spring", stiffness: 100 }}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  className="relative group"
+                >
+                  {/* Card Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-lg" />
+                  
+                  {/* Step Number Badge */}
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 200 }}
+                    className="relative z-10 w-14 h-14 mx-auto mb-6 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl flex items-center justify-center text-xl font-bold shadow-lg shadow-blue-300/50 group-hover:shadow-blue-400/70 transition-shadow duration-300"
+                  >
+                    {step.id}
+                    <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl -z-10 opacity-30 blur-sm group-hover:opacity-50 transition-opacity" />
+                  </motion.div>
+
+                  {/* Icon Container */}
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    whileInView={{ scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.6 + index * 0.1, duration: 0.5 }}
+                    className="relative z-10 w-28 h-28 mx-auto mb-6 bg-white rounded-3xl flex items-center justify-center shadow-xl shadow-blue-100/50 group-hover:shadow-blue-200/70 transition-all duration-500 border border-blue-100"
+                  >
+                    <motion.div
+                      initial={{ scale: 0.5, rotate: -180 }}
+                      whileInView={{ scale: 1, rotate: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.8 + index * 0.1, duration: 0.7, type: "spring" }}
+                      className="relative"
+                    >
+                      <Icon className="w-12 h-12 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
+                      <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-xl group-hover:bg-blue-500/30 transition-all duration-500" />
+                    </motion.div>
+                    
+                    {/* Rotating Ring Animation */}
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      whileInView={{ rotate: 360 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 1 + index * 0.1, duration: 3, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0 border-2 border-dashed border-blue-200 rounded-3xl group-hover:border-blue-300 transition-colors"
+                    />
+                  </motion.div>
+
+                  {/* Content */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 1 + index * 0.1, duration: 0.5 }}
+                    className="relative z-10 text-center px-4"
+                  >
+                    <motion.h3 
+                      whileHover={{ scale: 1.05 }}
+                      className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors duration-300"
+                    >
+                      {step.title}
+                    </motion.h3>
+                    <p className="text-slate-600 text-sm leading-relaxed group-hover:text-slate-700 transition-colors duration-300">
+                      {step.description}
+                    </p>
+                  </motion.div>
+
+                  {/* Progress Dots */}
+                  {index < STEPS.length - 1 && (
+                    <div className="hidden lg:block absolute top-16 left-0 w-full h-0.5 -z-10">
+                      <motion.div 
+                        initial={{ scaleX: 0 }}
+                        whileInView={{ scaleX: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 1.2 + index * 0.1, duration: 0.8 }}
+                        className="h-full bg-gradient-to-r from-blue-300 to-blue-400 origin-right"
+                      />
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 1.5 + index * 0.1, duration: 0.4 }}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full shadow-lg shadow-blue-300"
+                      />
+                    </div>
+                  )}
+
+                  {/* Floating Particles */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+                    {[...Array(3)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ 
+                          x: Math.random() * 100 - 50,
+                          y: Math.random() * 100 + 100,
+                          opacity: 0,
+                          scale: 0
+                        }}
+                        whileInView={{ 
+                          y: [null, -20 - Math.random() * 30],
+                          opacity: [0, 0.6, 0],
+                          scale: [0, 1, 0.5]
+                        }}
+                        transition={{ 
+                          delay: 1.5 + index * 0.1 + i * 0.3,
+                          duration: 2 + Math.random(),
+                          repeat: Infinity,
+                          repeatDelay: 3 + Math.random() * 2
+                        }}
+                        className="absolute w-2 h-2 bg-blue-400 rounded-full"
+                      />
+                    ))}
                   </div>
-                )}
-
-                <div className="w-24 h-24 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                  <Icon className="w-10 h-10 text-blue-600" />
-                </div>
-
-                <div className="w-8 h-8 mx-auto -mt-14 mb-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                  {step.id}
-                </div>
-
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{step.title}</h3>
-                <p className="text-slate-600 text-sm">{step.description}</p>
-              </motion.div>
-            );
-          })}
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
+
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 1.5, duration: 0.6 }}
+          className="text-center mt-16"
+        >
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full font-bold text-lg shadow-xl shadow-blue-300/50 hover:shadow-blue-400/70 transition-all duration-300 cursor-pointer"
+          >
+            <span>ابدأ رحلتك الآن</span>
+            <motion.span
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </motion.span>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
@@ -922,11 +1299,13 @@ function FAQSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="text-blue-600 font-medium mb-4 block">الأسئلة الشائعة</span>
+            <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-bold mb-4">
+              الأسئلة الشائعة
+            </span>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-serif">
               كل ما تريد معرفته عن أمديست
             </h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">
+            <p className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed">
               إذا لم تجد إجابة سؤالك، لا تتردد في التواصل معنا
             </p>
           </motion.div>
@@ -1092,24 +1471,6 @@ function DirectAdmissionsSection() {
                 alt="University Campus"
                 className="rounded-2xl shadow-2xl"
               />
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-                className="absolute -right-4 bottom-10 bg-white text-slate-900 rounded-xl p-4 shadow-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <Check className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">٥٠+ جامعة</p>
-                    <p className="text-sm text-slate-500">جاهزة للقبول</p>
-                  </div>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>
