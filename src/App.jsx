@@ -112,14 +112,8 @@ const SERVICES = [
       "استشارة مجانية مع خبير"
     ],
     tier: "gold",
-    icon: Package,
-    gradient: "from-yellow-400 via-amber-500 to-yellow-600",
-    bgGradient: "from-yellow-50/80 via-amber-50/50 to-white",
-    borderColor: "border-yellow-400",
-    shadowColor: "shadow-yellow-200/50",
-    buttonGradient: "from-yellow-500 to-amber-600",
-    hoverShadow: "hover:shadow-yellow-300/60",
-    accentColor: "#f59e0b"
+    tierEmoji: "🥇",
+    tierColor: "from-yellow-400 to-amber-500"
   },
   {
     id: 2,
@@ -135,14 +129,8 @@ const SERVICES = [
       "تعديل مجاني مرة واحدة"
     ],
     tier: "silver",
-    icon: Zap,
-    gradient: "from-gray-300 via-slate-400 to-gray-500",
-    bgGradient: "from-gray-50/80 via-slate-50/50 to-white",
-    borderColor: "border-gray-300",
-    shadowColor: "shadow-gray-200/50",
-    buttonGradient: "from-gray-600 to-slate-700",
-    hoverShadow: "hover:shadow-gray-300/60",
-    accentColor: "#6b7280"
+    tierEmoji: "🥈",
+    tierColor: "from-gray-300 to-gray-400"
   },
   {
     id: 3,
@@ -157,14 +145,8 @@ const SERVICES = [
       "تعديلات حتى الرضا"
     ],
     tier: "bronze",
-    icon: PenTool,
-    gradient: "from-amber-600 via-orange-600 to-amber-700",
-    bgGradient: "from-amber-50/80 via-orange-50/50 to-white",
-    borderColor: "border-amber-400",
-    shadowColor: "shadow-amber-200/50",
-    buttonGradient: "from-amber-600 to-orange-700",
-    hoverShadow: "hover:shadow-amber-300/60",
-    accentColor: "#d97706"
+    tierEmoji: "🥉",
+    tierColor: "from-amber-600 to-orange-600"
   }
 ];
 
@@ -560,7 +542,7 @@ function Hero({ onNavigate }) {
 // Services Section
 function ServicesSection({ onSelectService }) {
   return (
-    <section id="services" className="py-24 bg-gradient-to-b from-slate-50 via-white to-slate-50">
+    <section id="services" className="py-24 bg-gradient-to-b from-white via-slate-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -573,27 +555,24 @@ function ServicesSection({ onSelectService }) {
               initial={{ scale: 0.9 }}
               whileInView={{ scale: 1 }}
               viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-sm font-bold mb-6 shadow-lg shadow-amber-300/50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full text-sm font-bold mb-6 shadow-lg shadow-blue-300/50"
             >
               <Star className="w-4 h-4 fill-current" />
               خدماتنا
             </motion.div>
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-5 font-serif">
-              اختر الباقة <span className="gradient-text-gold">المناسبة لك</span>
+              اختر الباقة <span className="gradient-text-blue">المناسبة لك</span>
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed">
-              باقات متنوعة تلبي احتياجاتك، من البرونزية إلى الذهبية
+              باقات متنوعة تلبي احتياجاتك بأسعار تنافسية
             </p>
           </motion.div>
         </div>
 
         {/* Services Grid */}
-        <div className="grid md:grid-cols-3 gap-8 items-start">
+        <div className="grid md:grid-cols-3 gap-8">
           {SERVICES.map((service, index) => {
-            const Icon = service.icon;
             const isGold = service.tier === 'gold';
-            const isSilver = service.tier === 'silver';
-            const isBronze = service.tier === 'bronze';
             
             return (
               <motion.div
@@ -602,102 +581,73 @@ function ServicesSection({ onSelectService }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -12 }}
-                className={`relative group rounded-3xl overflow-hidden transition-all duration-300 ${
-                  isGold 
-                    ? 'shadow-2xl shadow-amber-200/60 border-2 border-amber-400 scale-105 z-10' 
-                    : 'shadow-xl border border-slate-200'
-                }`}
+                whileHover={{ y: -8 }}
+                className="group relative bg-white rounded-2xl border-2 border-slate-100 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300 overflow-hidden flex flex-col"
               >
                 {/* Tier Badge */}
-                <div className={`absolute top-4 right-4 z-10 px-4 py-2 rounded-full text-xs font-bold shadow-lg ${
-                  isGold 
-                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white' 
-                    : isSilver
-                    ? 'bg-gradient-to-r from-slate-300 to-slate-400 text-white'
-                    : 'bg-gradient-to-r from-orange-400 to-amber-600 text-white'
-                }`}>
-                  {isGold && '🥇 ذهبية'}
-                  {isSilver && '🥈 فضية'}
-                  {isBronze && '🥉 برونزية'}
-                </div>
-
-                {/* Icon Header */}
-                <div className={`relative h-40 bg-gradient-to-br ${service.gradient} p-6`}>
-                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
-                  
-                  {/* Animated Background Pattern */}
-                  <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-4 left-4 w-20 h-20 border-2 border-white rounded-full" />
-                    <div className="absolute bottom-4 right-4 w-12 h-12 border-2 border-white rounded-full" />
-                  </div>
-
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    whileInView={{ scale: 1, rotate: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 + index * 0.1, type: "spring", stiffness: 200 }}
-                    className="relative z-10 w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-xl"
-                  >
-                    <Icon className="w-10 h-10 text-white" />
-                  </motion.div>
-                  
-                  {/* Shine Effect */}
-                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl" />
+                <div className={`absolute top-4 right-4 z-10 px-4 py-2 rounded-full text-xs font-bold shadow-md bg-gradient-to-r ${service.tierColor} text-white`}>
+                  {service.tierEmoji} {service.name.replace('الباقة ', '')}
                 </div>
 
                 {/* Content */}
-                <div className={`p-6 bg-gradient-to-b ${service.bgGradient}`}>
+                <div className="p-7 flex-1 flex flex-col">
+                  {/* Tier Emoji Large */}
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + index * 0.1, type: "spring", stiffness: 200 }}
+                    className="text-7xl mb-6 text-center"
+                  >
+                    {service.tierEmoji}
+                  </motion.div>
+
                   {/* Title */}
-                  <div className="text-center mb-4">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-1">{service.name}</h3>
-                    <p className="text-sm text-slate-500 font-medium">{service.nameEn}</p>
-                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-1 text-center">{service.name}</h3>
+                  <p className="text-sm text-slate-500 font-medium mb-5 text-center">{service.nameEn}</p>
 
                   {/* Price */}
-                  <div className="text-center mb-6">
-                    <div className="inline-flex items-baseline gap-1">
-                      <span className={`text-5xl font-black bg-gradient-to-r ${service.gradient} bg-clip-text text-transparent`}>
-                        {service.price}
-                      </span>
-                      <span className="text-slate-500 text-xl font-bold">₪</span>
-                    </div>
+                  <div className="flex items-center justify-center gap-1 mb-6">
+                    <span className="text-5xl font-bold text-blue-600">{service.price}</span>
+                    <span className="text-slate-500 text-lg font-bold">₪</span>
                   </div>
 
                   {/* Description */}
-                  <p className="text-slate-600 text-center text-sm leading-relaxed mb-6">
+                  <p className="text-slate-600 text-sm leading-relaxed mb-6 text-center">
                     {service.description}
                   </p>
 
-                  {/* Features */}
-                  <ul className="space-y-3 mb-6">
+                  {/* Divider */}
+                  <div className="h-px bg-gradient-to-r from-slate-200 via-blue-100 to-slate-200 mb-6" />
+
+                  {/* Features - Flex grow to push button down */}
+                  <ul className="space-y-3 mb-6 flex-1">
                     {service.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3 text-right">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                          isGold ? 'bg-amber-100' : isSilver ? 'bg-slate-100' : 'bg-orange-100'
-                        }`}>
-                          <Check className={`w-3 h-3 ${
-                            isGold ? 'text-amber-600' : isSilver ? 'text-slate-600' : 'text-orange-600'
-                          }`} />
+                        <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="w-3 h-3 text-blue-600" />
                         </div>
                         <span className="text-slate-700 text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  {/* CTA Button */}
+                  {/* CTA Button - Auto margin to align at bottom */}
                   <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => onSelectService(service)}
-                    className={`w-full py-4 rounded-xl font-bold text-white transition-all duration-300 shadow-lg bg-gradient-to-r ${service.buttonGradient} hover:shadow-xl hover:scale-105`}
+                    className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all duration-300 ${
+                      isGold 
+                        ? 'bg-gradient-to-r from-yellow-500 to-amber-600 shadow-yellow-300/50 hover:shadow-yellow-400/70'
+                        : service.tier === 'silver'
+                        ? 'bg-gradient-to-r from-gray-500 to-gray-600 shadow-gray-300/50 hover:shadow-gray-400/70'
+                        : 'bg-gradient-to-r from-amber-600 to-orange-600 shadow-amber-300/50 hover:shadow-amber-400/70'
+                    }`}
                   >
                     اطلب {service.name} الآن
                   </motion.button>
                 </div>
-
-                {/* Glow Effect on Hover */}
-                <div className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${service.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none`} />
               </motion.div>
             );
           })}
