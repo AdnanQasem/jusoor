@@ -21,7 +21,24 @@ import {
   TrendingUp,
   Building2,
   HandCoins,
-  Globe
+  Globe,
+  MousePointerClick,
+  ClipboardList,
+  FileCheck,
+  Rocket,
+  HelpCircle,
+  Sparkles,
+  Shield,
+  Wallet,
+  FileBadge,
+  Hourglass,
+  RefreshCcw,
+  MessageCircle,
+  Star,
+  Zap,
+  PenTool,
+  Languages,
+  Package
 } from 'lucide-react';
 
 // ==========================================
@@ -38,8 +55,8 @@ const SCHOLARSHIPS = [
     amount: "كاملة",
     type: "ماجستير",
     fields: ["الهندسة", "العلوم", "الإدارة"],
-    logo: "🏛️",
-    urgent: false
+    country: "🇪🇺",
+    countryName: "أوروبا"
   },
   {
     id: 2,
@@ -50,8 +67,8 @@ const SCHOLARSHIPS = [
     amount: "كاملة",
     type: "ماجستير",
     fields: ["جميع التخصصات"],
-    logo: "🇺🇸",
-    urgent: false
+    country: "🇺🇸",
+    countryName: "الولايات المتحدة"
   },
   {
     id: 3,
@@ -62,8 +79,8 @@ const SCHOLARSHIPS = [
     amount: "كاملة",
     type: "بكالوريوس",
     fields: ["الطب", "الهندسة", "الآداب"],
-    logo: "🇹🇷",
-    urgent: false
+    country: "🇹🇷",
+    countryName: "تركيا"
   },
   {
     id: 4,
@@ -74,51 +91,80 @@ const SCHOLARSHIPS = [
     amount: "كاملة",
     type: "دكتوراه",
     fields: ["البحث العلمي", "التنمية"],
-    logo: "🇪🇺",
-    urgent: true
+    country: "🇪🇺",
+    countryName: "أوروبا"
   }
 ];
 
 const SERVICES = [
   {
     id: 1,
-    name: "خدمة التقديم الشامل",
+    name: "الباقة الذهبية",
+    nameEn: "Gold Package",
     price: 70,
-    description: "الحزمة الكاملة: مراجعة السيرة الذاتية، كتابة رسالة التحفيز، ترجمة الوثائق، ومتابعة الطلب حتى القبول",
+    description: "الحزمة الشاملة لكل ما تحتاجه للتقديم على المنح",
     features: [
       "مراجعة احترافية للسيرة الذاتية",
       "كتابة رسالة تحفيز مخصصة",
       "ترجمة معتمدة للوثائق",
       "متابعة مستمرة للطلب",
-      "دعم فني على مدار الساعة"
+      "دعم فني على مدار الساعة",
+      "استشارة مجانية مع خبير"
     ],
-    popular: true
+    tier: "gold",
+    icon: Package,
+    gradient: "from-yellow-400 via-amber-500 to-yellow-600",
+    bgGradient: "from-yellow-50/80 via-amber-50/50 to-white",
+    borderColor: "border-yellow-400",
+    shadowColor: "shadow-yellow-200/50",
+    buttonGradient: "from-yellow-500 to-amber-600",
+    hoverShadow: "hover:shadow-yellow-300/60",
+    accentColor: "#f59e0b"
   },
   {
     id: 2,
-    name: "تصميم السيرة الذاتية",
-    price: 15,
-    description: "CV احترافي متوافق مع أنظمة الترشيح الآلية (ATS) مخصص للمنح الدولية",
+    name: "الباقة الفضية",
+    nameEn: "Silver Package",
+    price: 40,
+    description: "خدمات أساسية متكاملة لتقديم احترافي",
     features: [
-      "تصميم احترافي حديث",
-      "توافق كامل مع ATS",
-      "نسق PDF وجاهز للطباعة",
-      "مراجعة وتعديل مجاني"
+      "تصميم سيرة ذاتية احترافية",
+      "كتابة رسالة تحفيز",
+      "مراجعة لغوية شاملة",
+      "تنسيق PDF جاهز",
+      "تعديل مجاني مرة واحدة"
     ],
-    popular: false
+    tier: "silver",
+    icon: Zap,
+    gradient: "from-gray-300 via-slate-400 to-gray-500",
+    bgGradient: "from-gray-50/80 via-slate-50/50 to-white",
+    borderColor: "border-gray-300",
+    shadowColor: "shadow-gray-200/50",
+    buttonGradient: "from-gray-600 to-slate-700",
+    hoverShadow: "hover:shadow-gray-300/60",
+    accentColor: "#6b7280"
   },
   {
     id: 3,
-    name: "كتابة رسالة التحفيز",
+    name: "الباقة البرونزية",
+    nameEn: "Bronze Package",
     price: 20,
-    description: "رسالة تحفيز مقنعة تبرز نقاط قوتك ودوافعك بأسلوب احترافي",
+    description: "خدمة متخصصة لرسالة التحفيز فقط",
     features: [
-      "أسلوب مقنع ومؤثر",
+      "كتابة رسالة تحفيز مقنعة",
       "تخصيص حسب المنحة",
-      "مراجعة لغوية شاملة",
+      "مراجعة لغوية",
       "تعديلات حتى الرضا"
     ],
-    popular: false
+    tier: "bronze",
+    icon: PenTool,
+    gradient: "from-amber-600 via-orange-600 to-amber-700",
+    bgGradient: "from-amber-50/80 via-orange-50/50 to-white",
+    borderColor: "border-amber-400",
+    shadowColor: "shadow-amber-200/50",
+    buttonGradient: "from-amber-600 to-orange-700",
+    hoverShadow: "hover:shadow-amber-300/60",
+    accentColor: "#d97706"
   }
 ];
 
@@ -126,32 +172,38 @@ const FAQS = [
   {
     id: 1,
     question: "ما هي منصة أمديست؟",
-    answer: "أمديست هي منصة متخصصة تهدف إلى مساعدة طلاب فلسطين في غزة على الحصول على منح دراسية دولية. نقدم خدمات متكاملة تشمل البحث عن المنح، إعداد الأوراق، ومتابعة الطلبات حتى القبول."
+    answer: "أمديست هي منصة متخصصة تهدف إلى مساعدة طلاب فلسطين في غزة على الحصول على منح دراسية دولية. نقدم خدمات متكاملة تشمل البحث عن المنح، إعداد الأوراق، ومتابعة الطلبات حتى القبول.",
+    icon: Sparkles
   },
   {
     id: 2,
     question: "هل يجب الدفع قبل رؤية المنح؟",
-    answer: "لا، قائمة المنح متاحة للجميع مجاناً. الدفع مطلوب فقط عند طلب خدمات التقديم الشاملة أو خدمات إعداد الأوراق."
+    answer: "لا، قائمة المنح متاحة للجميع مجاناً. الدفع مطلوب فقط عند طلب خدمات التقديم الشاملة أو خدمات إعداد الأوراق.",
+    icon: Wallet
   },
   {
     id: 3,
     question: "كيف يعمل نظام PalPay؟",
-    answer: "PalPay هو نظام دفع فلسطيني آمن. يمكنك تحويل المبلغ عبر تطبيق PalPay إلى رقم الهاتف المحدد، ثم إرفاق إيصال الدفع في استمارة الطلب."
+    answer: "PalPay هو نظام دفع فلسطيني آمن. يمكنك تحويل المبلغ عبر تطبيق PalPay إلى رقم الهاتف المحدد، ثم إرفاق إيصال الدفع في استمارة الطلب.",
+    icon: Shield
   },
   {
     id: 4,
     question: "ما الوثائق المطلوبة للتقديم؟",
-    answer: "الوثائق الأساسية تشمل: جواز السفر، شهادة الثانوية العامة، كشف علامات الجامعة (للماجستير)، شهادة اللغة (إن وجدت)، CV، ورسالة تحفيز."
+    answer: "الوثائق الأساسية تشمل: جواز السفر، شهادة الثانوية العامة، كشف علامات الجامعة (للماجستير)، شهادة اللغة (إن وجدت)، CV، ورسالة تحفيز.",
+    icon: FileBadge
   },
   {
     id: 5,
     question: "كم يستغرق عمل السيرة الذاتية؟",
-    answer: "نقدم السيرة الذاتية خلال 24-48 ساعة من استلام الطلب والدفع. الخدمة السريعة متوفرة عند الطلب."
+    answer: "نقدم السيرة الذاتية خلال 24-48 ساعة من استلام الطلب والدفع. الخدمة السريعة متوفرة عند الطلب.",
+    icon: Hourglass
   },
   {
     id: 6,
     question: "هل يمكن استرداد المال إذا أغلقت المنحة؟",
-    answer: "نعم، في حال إغلاق المنحة قبل تقديم طلبك، يمكنك استرداد المبلغ كاملاً أو تحويله لمنحة أخرى حسب رغبتك."
+    answer: "نعم، في حال إغلاق المنحة قبل تقديم طلبك، يمكنك استرداد المبلغ كاملاً أو تحويله لمنحة أخرى حسب رغبتك.",
+    icon: RefreshCcw
   }
 ];
 
@@ -159,26 +211,26 @@ const STEPS = [
   {
     id: 1,
     title: "اختر الخدمة وادفع",
-    description: "اختر الخدمة المناسبة وادفع عبر PalPay",
-    icon: CreditCard
+    description: "اختر الخدمة المناسبة وادفع بسهولة عبر PalPay",
+    icon: MousePointerClick
   },
   {
     id: 2,
     title: "املأ استمارة التقديم",
-    description: "أكمل البيانات المطلوبة في الاستمارة",
-    icon: FileText
+    description: "أكمل بياناتك في الاستمارة بخطوات بسيطة",
+    icon: ClipboardList
   },
   {
     id: 3,
     title: "نحن نجهز ملفك",
-    description: "فريقنا يعمل على إعداد أوراقك خلال 48-72 ساعة",
-    icon: Clock
+    description: "فريقنا المتخصص يعمل على إعداد ملفاتك خلال 48-72 ساعة",
+    icon: FileCheck
   },
   {
     id: 4,
     title: "تقديم ومتابعة",
-    description: "تتبع حالة طلبك عبر لوحة التحكم الخاصة بك",
-    icon: TrendingUp
+    description: "تتبع حالة طلبك واحصل على القبول",
+    icon: Rocket
   }
 ];
 
@@ -508,78 +560,166 @@ function Hero({ onNavigate }) {
 // Services Section
 function ServicesSection({ onSelectService }) {
   return (
-    <section id="services" className="py-20 bg-white">
+    <section id="services" className="py-24 bg-gradient-to-b from-slate-50 via-white to-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-bold mb-4">
+            <motion.div
+              initial={{ scale: 0.9 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-sm font-bold mb-6 shadow-lg shadow-amber-300/50"
+            >
+              <Star className="w-4 h-4 fill-current" />
               خدماتنا
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-serif">
-              باقات متكاملة لتحقيق حلمك
+            </motion.div>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-5 font-serif">
+              اختر الباقة <span className="gradient-text-gold">المناسبة لك</span>
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed">
-              اختر الخدمة التي تناسب احتياجاتك، وفريقنا المتخصص سيتولى إعداد أوراقك باحترافية
+              باقات متنوعة تلبي احتياجاتك، من البرونزية إلى الذهبية
             </p>
           </motion.div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {SERVICES.map((service, index) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className={`relative bg-white rounded-2xl p-8 border-2 transition-all duration-300 card-hover ${service.popular ? 'border-blue-600 shadow-xl' : 'border-slate-100 hover:border-blue-300'
+        {/* Services Grid */}
+        <div className="grid md:grid-cols-3 gap-8 items-start">
+          {SERVICES.map((service, index) => {
+            const Icon = service.icon;
+            const isGold = service.tier === 'gold';
+            const isSilver = service.tier === 'silver';
+            const isBronze = service.tier === 'bronze';
+            
+            return (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -12 }}
+                className={`relative group rounded-3xl overflow-hidden transition-all duration-300 ${
+                  isGold 
+                    ? 'shadow-2xl shadow-amber-200/60 border-2 border-amber-400 scale-105 z-10' 
+                    : 'shadow-xl border border-slate-200'
                 }`}
-            >
-              {service.popular && (
-                <div className="absolute -top-3 right-1/2 translate-x-1/2 px-4 py-1 bg-blue-600 text-white text-sm font-medium rounded-full">
-                  الأكثر طلباً
-                </div>
-              )}
-
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{service.name}</h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-slate-900">{service.price}</span>
-                  <span className="text-slate-500">₪</span>
-                </div>
-              </div>
-
-              <p className="text-slate-600 text-center mb-6 text-sm leading-relaxed">
-                {service.description}
-              </p>
-
-              <ul className="space-y-3 mb-8">
-                {service.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3 text-right">
-                    <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700 text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onSelectService(service)}
-                className={`w-full py-3 rounded-xl font-medium transition-colors ${service.popular
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
               >
-                اطلب الخدمة
-              </motion.button>
-            </motion.div>
-          ))}
+                {/* Tier Badge */}
+                <div className={`absolute top-4 right-4 z-10 px-4 py-2 rounded-full text-xs font-bold shadow-lg ${
+                  isGold 
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white' 
+                    : isSilver
+                    ? 'bg-gradient-to-r from-slate-300 to-slate-400 text-white'
+                    : 'bg-gradient-to-r from-orange-400 to-amber-600 text-white'
+                }`}>
+                  {isGold && '🥇 ذهبية'}
+                  {isSilver && '🥈 فضية'}
+                  {isBronze && '🥉 برونزية'}
+                </div>
+
+                {/* Icon Header */}
+                <div className={`relative h-40 bg-gradient-to-br ${service.gradient} p-6`}>
+                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
+                  
+                  {/* Animated Background Pattern */}
+                  <div className="absolute inset-0 opacity-20">
+                    <div className="absolute top-4 left-4 w-20 h-20 border-2 border-white rounded-full" />
+                    <div className="absolute bottom-4 right-4 w-12 h-12 border-2 border-white rounded-full" />
+                  </div>
+
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    whileInView={{ scale: 1, rotate: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + index * 0.1, type: "spring", stiffness: 200 }}
+                    className="relative z-10 w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-xl"
+                  >
+                    <Icon className="w-10 h-10 text-white" />
+                  </motion.div>
+                  
+                  {/* Shine Effect */}
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl" />
+                </div>
+
+                {/* Content */}
+                <div className={`p-6 bg-gradient-to-b ${service.bgGradient}`}>
+                  {/* Title */}
+                  <div className="text-center mb-4">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-1">{service.name}</h3>
+                    <p className="text-sm text-slate-500 font-medium">{service.nameEn}</p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-baseline gap-1">
+                      <span className={`text-5xl font-black bg-gradient-to-r ${service.gradient} bg-clip-text text-transparent`}>
+                        {service.price}
+                      </span>
+                      <span className="text-slate-500 text-xl font-bold">₪</span>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-slate-600 text-center text-sm leading-relaxed mb-6">
+                    {service.description}
+                  </p>
+
+                  {/* Features */}
+                  <ul className="space-y-3 mb-6">
+                    {service.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3 text-right">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          isGold ? 'bg-amber-100' : isSilver ? 'bg-slate-100' : 'bg-orange-100'
+                        }`}>
+                          <Check className={`w-3 h-3 ${
+                            isGold ? 'text-amber-600' : isSilver ? 'text-slate-600' : 'text-orange-600'
+                          }`} />
+                        </div>
+                        <span className="text-slate-700 text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => onSelectService(service)}
+                    className={`w-full py-4 rounded-xl font-bold text-white transition-all duration-300 shadow-lg bg-gradient-to-r ${service.buttonGradient} hover:shadow-xl hover:scale-105`}
+                  >
+                    اطلب {service.name} الآن
+                  </motion.button>
+                </div>
+
+                {/* Glow Effect on Hover */}
+                <div className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${service.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none`} />
+              </motion.div>
+            );
+          })}
         </div>
+
+        {/* Guarantee Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-16 text-center"
+        >
+          <div className="inline-flex items-center gap-4 px-8 py-5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 shadow-lg shadow-green-100/50">
+            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Shield className="w-7 h-7 text-white" />
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-green-800 text-lg">ضمان الجودة والثقة</p>
+              <p className="text-sm text-green-600">نضمن لك جودة عالية أو استرداد أموالك بالكامل</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -728,156 +868,85 @@ function ScholarshipsSection() {
         </motion.div>
 
         {/* Scholarships Grid */}
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+        <div className="grid md:grid-cols-2 gap-6">
           {filteredScholarships.map((scholarship, index) => {
             const daysLeft = getDaysLeft(scholarship.deadline);
-            const isUrgent = scholarship.urgent || daysLeft < 30;
 
             return (
               <motion.div
                 key={scholarship.id}
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ delay: index * 0.1, duration: 0.5, type: "spring", stiffness: 100 }}
-                onMouseEnter={() => setHoveredCard(scholarship.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-blue-200/50 transition-all duration-500 border border-slate-100"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                whileHover={{ y: -4 }}
+                className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-blue-300 hover:shadow-xl transition-all duration-300"
               >
-                {/* Card Background Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-blue-50/0 to-blue-50/50 group-hover:from-blue-50/50 group-hover:via-blue-50/30 group-hover:to-blue-50/100 transition-all duration-500" />
-                
-                {/* Urgent Badge */}
-                {isUrgent && (
-                  <motion.div
-                    initial={{ scale: 0, rotate: -45 }}
-                    whileInView={{ scale: 1, rotate: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.5 + index * 0.1, type: "spring" }}
-                    className="absolute top-4 left-4 z-20"
-                  >
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full text-xs font-bold shadow-lg shadow-red-300/50">
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      <span>عاجل</span>
+                {/* Card Header */}
+                <div className="p-5 border-b border-slate-100">
+                  <div className="flex items-center gap-4">
+                    {/* Country Flag as Icon */}
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center text-4xl flex-shrink-0 shadow-sm">
+                      {scholarship.country}
                     </div>
-                  </motion.div>
-                )}
 
-                {/* Top Decoration */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                <div className="relative p-6 lg:p-7">
-                  <div className="flex items-start gap-5">
-                    {/* Logo with Animation */}
-                    <motion.div 
-                      initial={{ scale: 0, rotate: -180 }}
-                      whileInView={{ scale: 1, rotate: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.6 + index * 0.1, type: "spring", stiffness: 200 }}
-                      whileHover={{ scale: 1.1, rotate: 12 }}
-                      className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-3xl shadow-md group-hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
-                    >
-                      {scholarship.logo}
-                    </motion.div>
-
-                    <div className="flex-1 text-right">
+                    <div className="flex-1">
                       {/* Title */}
-                      <motion.div
-                        initial={{ opacity: 0, x: 20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.7 + index * 0.1 }}
-                      >
-                        <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-700 transition-colors duration-300">
-                          {scholarship.name}
-                        </h3>
-                        <p className="text-sm text-slate-500 font-medium">{scholarship.nameEn}</p>
-                      </motion.div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        {scholarship.name}
+                      </h3>
+                      <p className="text-sm text-slate-500">{scholarship.nameEn}</p>
+                    </div>
 
-                      {/* University */}
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.8 + index * 0.1 }}
-                        className="text-slate-600 mt-3 text-sm flex items-center gap-2"
-                      >
-                        <Building2 className="w-4 h-4 text-blue-500" />
-                        {scholarship.university}
-                      </motion.p>
-
-                      {/* Tags */}
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.9 + index * 0.1 }}
-                        className="flex flex-wrap gap-2 mt-4"
-                      >
-                        <span className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-300/50">
-                          {scholarship.type}
-                        </span>
-                        <span className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl text-xs font-bold shadow-md shadow-green-300/50">
-                          {scholarship.amount}
-                        </span>
-                        {scholarship.fields.slice(0, 2).map((field, i) => (
-                          <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-medium border border-slate-200">
-                            {field}
-                          </span>
-                        ))}
-                      </motion.div>
-
-                      {/* Footer */}
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 1 + index * 0.1 }}
-                        className="flex items-center justify-between pt-5 mt-5 border-t border-slate-100"
-                      >
-                        {/* Deadline */}
-                        <motion.div 
-                          className={`flex items-center gap-2 px-3 py-2 rounded-xl ${
-                            daysLeft < 7 
-                              ? 'bg-red-50 text-red-700' 
-                              : daysLeft < 30 
-                              ? 'bg-yellow-50 text-yellow-700'
-                              : 'bg-slate-50 text-slate-600'
-                          }`}
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          <motion.div
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                          >
-                            <Clock className="w-4 h-4" />
-                          </motion.div>
-                          <span className="text-sm font-bold">
-                            {daysLeft > 0 ? `${daysLeft} يوم` : 'منتهي'}
-                          </span>
-                        </motion.div>
-
-                        {/* CTA Button */}
-                        <motion.button
-                          whileHover={{ scale: 1.05, x: -5 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-300/50 hover:shadow-blue-400/70 transition-all duration-300 flex items-center gap-2 group/btn"
-                        >
-                          <span>تقديم</span>
-                          <motion.span
-                            animate={{ x: [0, -3, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          >
-                            <ArrowLeft className="w-4 h-4" />
-                          </motion.span>
-                        </motion.button>
-                      </motion.div>
+                    {/* Deadline Badge */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg">
+                      <Clock className="w-4 h-4 text-slate-500" />
+                      <span className={`text-sm font-bold ${
+                        daysLeft < 7 ? 'text-red-600' : daysLeft < 30 ? 'text-orange-600' : 'text-slate-700'
+                      }`}>
+                        {daysLeft} يوم
+                      </span>
                     </div>
                   </div>
+
+                  {/* University */}
+                  <p className="text-sm text-slate-600 mt-3 flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-blue-500" />
+                    {scholarship.university}
+                  </p>
                 </div>
 
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ filter: 'blur(20px)' }} />
+                {/* Card Body */}
+                <div className="p-5 bg-slate-50/50">
+                  {/* Tags Row */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold">
+                      {scholarship.type}
+                    </span>
+                    <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-bold">
+                      {scholarship.amount}
+                    </span>
+                  </div>
+
+                  {/* Fields */}
+                  <div className="flex flex-wrap gap-2">
+                    {scholarship.fields.slice(0, 3).map((field, i) => (
+                      <span key={i} className="px-2.5 py-1 bg-white border border-slate-200 text-slate-600 rounded-md text-xs">
+                        {field}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* CTA Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                  >
+                    <span>قدّم الآن</span>
+                    <ArrowLeft className="w-4 h-4" />
+                  </motion.button>
+                </div>
               </motion.div>
             );
           })}
@@ -970,131 +1039,47 @@ function HowItWorksSection() {
         </div>
 
         <div className="relative">
-          {/* Connection Line - Desktop */}
-          <div className="hidden lg:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-200 opacity-30" />
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {STEPS.map((step, index) => {
               const Icon = step.icon;
               return (
                 <motion.div
                   key={step.id}
-                  initial={{ opacity: 0, y: 40 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ delay: index * 0.15, duration: 0.6, type: "spring", stiffness: 100 }}
-                  whileHover={{ y: -10, scale: 1.02 }}
-                  className="relative group"
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -8 }}
+                  className="group relative bg-white rounded-2xl p-6 border border-slate-100 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300"
                 >
-                  {/* Card Background */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-lg" />
-                  
-                  {/* Step Number Badge */}
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 200 }}
-                    className="relative z-10 w-14 h-14 mx-auto mb-6 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl flex items-center justify-center text-xl font-bold shadow-lg shadow-blue-300/50 group-hover:shadow-blue-400/70 transition-shadow duration-300"
-                  >
+                  {/* Step Number */}
+                  <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-300/40 group-hover:shadow-blue-400/60 transition-shadow duration-300">
                     {step.id}
-                    <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl -z-10 opacity-30 blur-sm group-hover:opacity-50 transition-opacity" />
-                  </motion.div>
-
-                  {/* Icon Container */}
-                  <motion.div 
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    whileInView={{ scale: 1, opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.6 + index * 0.1, duration: 0.5 }}
-                    className="relative z-10 w-28 h-28 mx-auto mb-6 bg-white rounded-3xl flex items-center justify-center shadow-xl shadow-blue-100/50 group-hover:shadow-blue-200/70 transition-all duration-500 border border-blue-100"
-                  >
-                    <motion.div
-                      initial={{ scale: 0.5, rotate: -180 }}
-                      whileInView={{ scale: 1, rotate: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.8 + index * 0.1, duration: 0.7, type: "spring" }}
-                      className="relative"
-                    >
-                      <Icon className="w-12 h-12 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
-                      <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-xl group-hover:bg-blue-500/30 transition-all duration-500" />
-                    </motion.div>
-                    
-                    {/* Rotating Ring Animation */}
-                    <motion.div
-                      initial={{ rotate: 0 }}
-                      whileInView={{ rotate: 360 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 1 + index * 0.1, duration: 3, repeat: Infinity, ease: "linear" }}
-                      className="absolute inset-0 border-2 border-dashed border-blue-200 rounded-3xl group-hover:border-blue-300 transition-colors"
-                    />
-                  </motion.div>
-
-                  {/* Content */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 1 + index * 0.1, duration: 0.5 }}
-                    className="relative z-10 text-center px-4"
-                  >
-                    <motion.h3 
-                      whileHover={{ scale: 1.05 }}
-                      className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors duration-300"
-                    >
-                      {step.title}
-                    </motion.h3>
-                    <p className="text-slate-600 text-sm leading-relaxed group-hover:text-slate-700 transition-colors duration-300">
-                      {step.description}
-                    </p>
-                  </motion.div>
-
-                  {/* Progress Dots */}
-                  {index < STEPS.length - 1 && (
-                    <div className="hidden lg:block absolute top-16 left-0 w-full h-0.5 -z-10">
-                      <motion.div 
-                        initial={{ scaleX: 0 }}
-                        whileInView={{ scaleX: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 1.2 + index * 0.1, duration: 0.8 }}
-                        className="h-full bg-gradient-to-r from-blue-300 to-blue-400 origin-right"
-                      />
-                      <motion.div 
-                        initial={{ scale: 0 }}
-                        whileInView={{ scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 1.5 + index * 0.1, duration: 0.4 }}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full shadow-lg shadow-blue-300"
-                      />
-                    </div>
-                  )}
-
-                  {/* Floating Particles */}
-                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
-                    {[...Array(3)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ 
-                          x: Math.random() * 100 - 50,
-                          y: Math.random() * 100 + 100,
-                          opacity: 0,
-                          scale: 0
-                        }}
-                        whileInView={{ 
-                          y: [null, -20 - Math.random() * 30],
-                          opacity: [0, 0.6, 0],
-                          scale: [0, 1, 0.5]
-                        }}
-                        transition={{ 
-                          delay: 1.5 + index * 0.1 + i * 0.3,
-                          duration: 2 + Math.random(),
-                          repeat: Infinity,
-                          repeatDelay: 3 + Math.random() * 2
-                        }}
-                        className="absolute w-2 h-2 bg-blue-400 rounded-full"
-                      />
-                    ))}
                   </div>
+
+                  {/* Icon */}
+                  <div className="w-20 h-20 mb-5 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                    <Icon className="w-10 h-10 text-blue-600 group-hover:text-blue-700 group-hover:scale-110 transition-all duration-300" />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-700 transition-colors duration-300">
+                    {step.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    {step.description}
+                  </p>
+
+                  {/* Arrow indicator on hover */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    whileHover={{ opacity: 1, x: 0 }}
+                    className="absolute bottom-6 left-6 text-blue-600"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </motion.div>
                 </motion.div>
               );
             })}
@@ -1287,23 +1272,27 @@ function FAQSection() {
     setOpenId(openId === id ? null : id);
   };
 
-  const leftColumn = FAQS.slice(0, 3);
-  const rightColumn = FAQS.slice(3);
-
   return (
-    <section id="faq" className="py-20 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="faq" className="py-24 bg-gradient-to-b from-white via-blue-50/50 to-white">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-bold mb-4">
+            <motion.div 
+              initial={{ scale: 0.9 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full text-sm font-bold mb-6 shadow-lg shadow-blue-300/50"
+            >
+              <HelpCircle className="w-4 h-4" />
               الأسئلة الشائعة
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-serif">
-              كل ما تريد معرفته عن أمديست
+            </motion.div>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-5 font-serif">
+              كل ما تريد معرفته عن <span className="gradient-text-blue">أمديست</span>
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed">
               إذا لم تجد إجابة سؤالك، لا تتردد في التواصل معنا
@@ -1311,74 +1300,83 @@ function FAQSection() {
           </motion.div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            {leftColumn.map((faq) => (
-              <div
+        {/* FAQ Items */}
+        <div className="space-y-4">
+          {FAQS.map((faq, index) => {
+            const Icon = faq.icon;
+            const isOpen = openId === faq.id;
+            
+            return (
+              <motion.div
                 key={faq.id}
-                className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
               >
-                <button
-                  onClick={() => toggleFaq(faq.id)}
-                  className="w-full p-5 flex items-center justify-between text-right hover:bg-slate-50 transition-colors"
+                <div
+                  className={`group bg-white rounded-2xl border-2 overflow-hidden transition-all duration-300 ${
+                    isOpen 
+                      ? 'border-blue-300 shadow-xl shadow-blue-100/50' 
+                      : 'border-slate-100 hover:border-blue-200 hover:shadow-lg'
+                  }`}
                 >
-                  <span className="font-medium text-slate-900">{faq.question}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-slate-400 transition-transform ${openId === faq.id ? 'rotate-180' : ''
-                      }`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {openId === faq.id && (
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-5 pb-5 text-slate-600 text-right">
-                        {faq.answer}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
+                  <button
+                    onClick={() => toggleFaq(faq.id)}
+                    className="w-full p-5 md:p-6 flex items-center gap-4 text-right"
+                  >
+                    {/* Icon */}
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                      isOpen 
+                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-300/50' 
+                        : 'bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500 group-hover:from-blue-100 group-hover:to-blue-50 group-hover:text-blue-600'
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
 
-          <div className="space-y-4">
-            {rightColumn.map((faq) => (
-              <div
-                key={faq.id}
-                className="bg-white rounded-xl border border-slate-200 overflow-hidden"
-              >
-                <button
-                  onClick={() => toggleFaq(faq.id)}
-                  className="w-full p-5 flex items-center justify-between text-right hover:bg-slate-50 transition-colors"
-                >
-                  <span className="font-medium text-slate-900">{faq.question}</span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-slate-400 transition-transform ${openId === faq.id ? 'rotate-180' : ''
-                      }`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {openId === faq.id && (
+                    {/* Question */}
+                    <span className={`flex-1 font-bold text-right text-lg ${
+                      isOpen ? 'text-blue-700' : 'text-slate-900 group-hover:text-blue-700'
+                    }`}>
+                      {faq.question}
+                    </span>
+
+                    {/* Chevron */}
                     <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: 'auto' }}
-                      exit={{ height: 0 }}
-                      className="overflow-hidden"
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                        isOpen 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600'
+                      }`}
                     >
-                      <div className="px-5 pb-5 text-slate-600 text-right">
-                        {faq.answer}
-                      </div>
+                      <ChevronDown className="w-5 h-5" />
                     </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
+                  </button>
+
+                  {/* Answer */}
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-6 pr-[4.5rem]">
+                          <div className="h-px bg-gradient-to-r from-blue-200 via-blue-100 to-transparent mb-4" />
+                          <p className="text-slate-600 leading-relaxed text-right">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -1481,78 +1479,145 @@ function DirectAdmissionsSection() {
 
 // Footer Component
 function Footer() {
+  const socialLinks = [
+    { name: 'فيسبوك', icon: 'f', href: '#' },
+    { name: 'تويتر', icon: '𝕏', href: '#' },
+    { name: 'انستغرام', icon: '📷', href: '#' },
+    { name: 'لينكدإن', icon: 'in', href: '#' }
+  ];
+
+  const quickLinks = [
+    { label: 'الرئيسية', href: '#home' },
+    { label: 'المنح', href: '#scholarships' },
+    { label: 'الخدمات', href: '#services' },
+    { label: 'كيف نعمل', href: '#how-it-works' },
+    { label: 'الأسئلة الشائعة', href: '#faq' }
+  ];
+
+  const services = [
+    { label: 'التقديم الشامل', href: '#services' },
+    { label: 'السيرة الذاتية', href: '#services' },
+    { label: 'رسالة التحفيز', href: '#services' },
+    { label: 'الترجمة', href: '#services' },
+    { label: 'المتابعة', href: '#services' }
+  ];
+
   return (
-    <footer className="bg-slate-900 text-white">
+    <footer className="bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* About Column */}
           <div>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold">أمديست</span>
+              <div>
+                <span className="text-xl font-bold block">أمديست</span>
+                <span className="text-xs text-slate-400">بوابتك للمستقبل</span>
+              </div>
             </div>
 
-            <p className="text-slate-400 text-sm leading-relaxed mb-4">
+            <p className="text-slate-400 text-sm leading-relaxed mb-6">
               منصة متخصصة في مساعدة طلاب فلسطين في غزة على الحصول على منح دراسية دولية.
             </p>
 
-            <div className="flex gap-4">
-              {['فيسبوك', 'تويتر', 'انستغرام', 'لينكدإن'].map((social) => (
+            <div className="flex gap-3">
+              {socialLinks.map((social) => (
                 <a
-                  key={social}
-                  href="#"
-                  className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-sm hover:bg-blue-600 transition-colors"
+                  key={social.name}
+                  href={social.href}
+                  className="w-10 h-10 bg-slate-700/50 rounded-xl flex items-center justify-center hover:bg-gradient-to-br hover:from-blue-600 hover:to-blue-700 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30"
+                  title={social.name}
                 >
-                  {social[0]}
+                  <span className="text-sm font-bold">{social.icon}</span>
                 </a>
               ))}
             </div>
           </div>
 
+          {/* Quick Links */}
           <div>
-            <h4 className="font-bold mb-4">روابط سريعة</h4>
-            <ul className="space-y-2 text-slate-400">
-              {['الرئيسية', 'المنح', 'الخدمات', 'كيف نعمل', 'الأسئلة الشائعة'].map((link) => (
-                <li key={link}>
-                  <a href="#" className="hover:text-white transition-colors">{link}</a>
+            <h4 className="font-bold mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-gradient-to-b from-blue-600 to-blue-400 rounded-full"></span>
+              روابط سريعة
+            </h4>
+            <ul className="space-y-3">
+              {quickLinks.map((link) => (
+                <li key={link.label}>
+                  <a 
+                    href={link.href} 
+                    className="text-slate-400 hover:text-white transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 bg-slate-600 rounded-full group-hover:bg-blue-500 transition-colors"></span>
+                    {link.label}
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
 
+          {/* Services */}
           <div>
-            <h4 className="font-bold mb-4">الخدمات</h4>
-            <ul className="space-y-2 text-slate-400">
-              {['التقديم الشامل', 'السيرة الذاتية', 'رسالة التحفيز', 'الترجمة', 'المتابعة'].map((service) => (
-                <li key={service}>
-                  <a href="#" className="hover:text-white transition-colors">{service}</a>
+            <h4 className="font-bold mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-gradient-to-b from-blue-600 to-blue-400 rounded-full"></span>
+              الخدمات
+            </h4>
+            <ul className="space-y-3">
+              {services.map((service) => (
+                <li key={service.label}>
+                  <a 
+                    href={service.href} 
+                    className="text-slate-400 hover:text-white transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 bg-slate-600 rounded-full group-hover:bg-blue-500 transition-colors"></span>
+                    {service.label}
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
-            <h4 className="font-bold mb-4">تواصل معنا</h4>
-            <ul className="space-y-3 text-slate-400">
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5" />
-                <span>+970 59-123-4567</span>
+            <h4 className="font-bold mb-6 flex items-center gap-2">
+              <span className="w-1 h-6 bg-gradient-to-b from-blue-600 to-blue-400 rounded-full"></span>
+              تواصل معنا
+            </h4>
+            <ul className="space-y-4">
+              <li className="flex items-center gap-3 group">
+                <div className="w-10 h-10 bg-slate-700/50 rounded-xl flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <span className="text-slate-400 group-hover:text-white transition-colors">+970 59-123-4567</span>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5" />
-                <span>info@amdist.ps</span>
+              <li className="flex items-center gap-3 group">
+                <div className="w-10 h-10 bg-slate-700/50 rounded-xl flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <span className="text-slate-400 group-hover:text-white transition-colors">info@amdist.ps</span>
               </li>
-              <li className="flex items-center gap-3">
-                <MapPin className="w-5 h-5" />
-                <span>غزة، فلسطين</span>
+              <li className="flex items-center gap-3 group">
+                <div className="w-10 h-10 bg-slate-700/50 rounded-xl flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <span className="text-slate-400 group-hover:text-white transition-colors">غزة، فلسطين</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-12 pt-8 text-center text-slate-500 text-sm">
-          <p>جميع الحقوق محفوظة © ٢٠٢٥ أمديست - منصة المنح الدراسية</p>
+        {/* Bottom Bar */}
+        <div className="border-t border-slate-700/50 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-slate-500 text-sm">
+              جميع الحقوق محفوظة © ٢٠٢٥ أمديست - منصة المنح الدراسية
+            </p>
+            <div className="flex items-center gap-6 text-sm text-slate-500">
+              <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
+              <a href="#" className="hover:text-white transition-colors">شروط الاستخدام</a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
@@ -1612,6 +1677,38 @@ function App() {
       </main>
 
       <Footer />
+
+      {/* WhatsApp Floating Button */}
+      <motion.a
+        href="https://wa.me/970599999999"
+        target="_blank"
+        rel="noopener noreferrer"
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="fixed bottom-6 right-6 z-50 group"
+      >
+        {/* Pulse Effect */}
+        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20" />
+        
+        {/* Button */}
+        <div className="relative flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-full shadow-2xl shadow-green-500/40 hover:shadow-green-500/60 transition-all duration-300 overflow-hidden">
+          {/* Background Shine Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+          
+          {/* Icon */}
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+            <MessageCircle className="w-5 h-5" />
+          </div>
+          
+          {/* Text */}
+          <div className="flex flex-col">
+            <span className="font-bold text-sm whitespace-nowrap">تواصل معنا</span>
+            <span className="text-xs text-green-100 whitespace-nowrap">عبر واتساب</span>
+          </div>
+        </div>
+      </motion.a>
 
       <AnimatePresence>
         {selectedService && (

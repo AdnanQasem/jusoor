@@ -182,3 +182,25 @@
     border-right-color: var(--border);
   }
 }
+
+/* Gradient Text Utilities */
+.gradient-text-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 50%, #92400e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-silver {
+  background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 50%, #64748b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-bronze {
+  background: linear-gradient(135deg, #fb923c 0%, #ea580c 50%, #9a3412 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
