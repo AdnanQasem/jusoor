@@ -125,6 +125,13 @@ export const applicationsAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  uploadReceipt: (id, file) => {
+    const formData = new FormData();
+    formData.append('receipt', file);
+    return api.post(`/applications/${id}/upload_receipt/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 // Contact API

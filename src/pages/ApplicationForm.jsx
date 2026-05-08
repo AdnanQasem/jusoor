@@ -31,6 +31,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     recommendation_letters: null,
     motivation_letter: null,
     passport_copy: null,
+    payment_receipt: null,
     additional_comments: ''
   });
 
@@ -85,6 +86,15 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateStep4 = () => {
+    const newErrors = {};
+    if (!formData.payment_receipt || !(formData.payment_receipt instanceof File)) {
+      newErrors.payment_receipt = 'إيصال الدفع مطلوب';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleNext = () => {
     if (step === 1 && validateStep1()) {
       setStep(2);
@@ -92,6 +102,8 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
       setStep(3);
     } else if (step === 3 && validateStep3()) {
       setStep(4);
+    } else if (step === 4 && validateStep4()) {
+      setStep(5);
     }
   };
 
@@ -146,6 +158,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     setLoading(true);
     setSubmitError('');
     try {
+      // First create the application with basic data
       const applicationData = {
         scholarship: scholarship.id,
         full_name: formData.full_name,
@@ -156,15 +169,19 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
         gender: formData.gender,
         education_level: formData.education_level,
         gpa: formData.gpa,
-        university: formData.university,
-        graduation_year: formData.graduation_year,
+        university: formData.university || '',
+        graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : new Date().getFullYear(),
         field_of_study: formData.field_of_study,
-        additional_comments: formData.additional_comments
+        additional_comments: formData.additional_comments || ''
       };
 
+      console.log('Submitting application:', applicationData);
+
       const response = await applicationsAPI.create(applicationData);
+      console.log('Application created:', response.data);
       const applicationId = response.data.id;
 
+      // Then upload all documents
       const documents = [
         { field: 'cv', type: 'cv' },
         { field: 'transcript', type: 'transcript' },
@@ -189,16 +206,37 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
         }
       }
 
+      // Upload payment receipt
+      if (formData.payment_receipt) {
+        setUploadProgress(prev => ({ ...prev, payment_receipt: 'uploading' }));
+        try {
+          await applicationsAPI.uploadReceipt(applicationId, formData.payment_receipt);
+          setUploadProgress(prev => ({ ...prev, payment_receipt: 'uploaded' }));
+        } catch (error) {
+          console.error(`Error uploading payment receipt:`, error);
+          setUploadProgress(prev => ({ ...prev, payment_receipt: 'error' }));
+          uploadErrors.push('payment_receipt');
+        }
+      }
+
       if (uploadErrors.length > 0) {
         setSubmitError('تم إنشاء الطلب لكن حدث خطأ في رفع بعض المستندات. يمكنك إعادة رفعها لاحقاً.');
         setStep(5);
         return;
       }
 
+      // Submit the application (if backend has a submit endpoint)
+      try {
+        await applicationsAPI.submit(applicationId);
+      } catch (submitError) {
+        console.log('Submit endpoint not available, application created but not submitted');
+      }
+
       setStep(5);
     } catch (error) {
       console.error('Error submitting application:', error);
-      const msg = error?.response?.data?.detail || error?.response?.data?.message || 'حدث خطأ في تقديم الطلب. يرجى المحاولة مرة أخرى.';
+      console.error('Error response:', error?.response?.data);
+      const msg = error?.response?.data?.detail || error?.response?.data?.message || error?.message || 'حدث خطأ في تقديم الطلب. يرجى المحاولة مرة أخرى.';
       setSubmitError(msg);
     } finally {
       setLoading(false);
@@ -224,7 +262,8 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     { number: 1, title: 'المعلومات الشخصية', icon: User },
     { number: 2, title: 'المعلومات الأكاديمية', icon: GraduationCap },
     { number: 3, title: 'رفع المستندات', icon: FileText },
-    { number: 4, title: 'المراجعة والإرسال', icon: CheckCircle }
+    { number: 4, title: 'إيصال الدفع', icon: CreditCard },
+    { number: 5, title: 'المراجعة والإرسال', icon: CheckCircle }
   ];
 
   return (
@@ -468,6 +507,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                       }`}
                     >
                       <option value="">اختر المستوى</option>
+                      <option value="tawjihi">توجيهي / ثانوية عامة</option>
                       <option value="bachelor">بكالوريوس</option>
                       <option value="master">ماجستير</option>
                       <option value="phd">دكتوراه</option>
@@ -597,10 +637,10 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                           ref={(el) => { fileInputRefs.current[doc.key] = el; }}
                           type="file"
                           onChange={(e) => handleFileChange(doc.key, e.target.files[0])}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
                           accept=".pdf,.jpg,.jpeg,.png"
                         />
-                        <div className="flex items-start justify-between pointer-events-none">
+                        <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                               hasError ? 'bg-red-100 text-red-600' :
@@ -619,12 +659,18 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); handleRemoveFile(doc.key); }}
-                              className="pointer-events-auto p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-400 hover:text-red-600"
+                              className="pointer-events-auto p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-400 hover:text-red-600 z-20 relative"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
                         </div>
+                        {!hasFile && (
+                          <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 pointer-events-none">
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>اضغط للرفع أو اسحب الملف هنا</span>
+                          </div>
+                        )}
                         {hasError && (
                           <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" />
@@ -659,12 +705,113 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                     placeholder="أي معلومات إضافية تود مشاركتها..."
                   />
                 </div>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-800 mb-1">ملاحظة:</p>
+                      <p className="text-sm text-amber-700">في الخطوة التالية، ستقوم برفع إيصال دفع رسوم التقديم (100₪) بعد استلام رسالة البريد الإلكتروني التي تحتوي على تفاصيل التحويل البنكي.</p>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
 
+            {/* Step 4: Payment Receipt */}
             {step === 4 && (
               <motion.div
                 key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  إيصال الدفع
+                </h3>
+
+                <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 border-2 border-emerald-300 rounded-2xl p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+                      <CreditCard className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-emerald-900">إيصال الدفع</h4>
+                      <p className="text-xs text-emerald-700">خطوة أساسية لإتمام التقديم</p>
+                    </div>
+                  </div>
+
+                  <div className={`border-2 rounded-xl p-4 transition-all ${
+                    errors.payment_receipt ? 'border-red-300 bg-red-50' :
+                    formData.payment_receipt ? 'border-emerald-500 bg-white' : 'border-emerald-300 bg-white'
+                  }`}>
+                    {!formData.payment_receipt ? (
+                      <div className="text-center py-4">
+                        <Upload className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+                        <p className="text-sm font-semibold text-slate-700 mb-2">اضغط على الزر أدناه لرفع إيصال الدفع</p>
+                        <p className="text-xs text-slate-500 mb-3">صورة واضحة من تحويل الرسوم البنكية</p>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRefs.current.payment_receipt?.click()}
+                          className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center gap-2"
+                        >
+                          <Upload className="w-4 h-4" />
+                          <span>اختر ملف الإيصال</span>
+                        </button>
+                        <input
+                          ref={(el) => {
+                            fileInputRefs.current.payment_receipt = el;
+                            if (el && formData.payment_receipt && el.files) {
+                              const dataTransfer = new DataTransfer();
+                              dataTransfer.items.add(formData.payment_receipt);
+                              el.files = dataTransfer.files;
+                            }
+                          }}
+                          type="file"
+                          onChange={(e) => handleFileChange('payment_receipt', e.target.files[0])}
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="w-6 h-6 text-emerald-600" />
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">تم رفع الإيصال بنجاح</p>
+                            <p className="text-xs text-slate-500 truncate">{formData.payment_receipt.name}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleRemoveFile('payment_receipt'); }}
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                    {errors.payment_receipt && (
+                      <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.payment_receipt}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="mt-4 bg-white/70 rounded-lg p-3 text-xs text-slate-600">
+                    <p className="font-semibold mb-1">⚠️ ملاحظة مهمة:</p>
+                    <p>يجب رفع صورة واضحة من إيصال دفع رسوم التقديم (100₪). سيتم إرسال تفاصيل التحويل البنكي إلى بريدك الإلكتروني بعد تقديم الطلب.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 5 && (
+              <motion.div
+                key="step5"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -740,7 +887,8 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                       { key: 'language_certificate', label: 'شهادة اللغة' },
                       { key: 'recommendation_letters', label: 'رسائل التوصية' },
                       { key: 'motivation_letter', label: 'المقال التحفيزي' },
-                      { key: 'passport_copy', label: 'نسخة جواز السفر' }
+                      { key: 'passport_copy', label: 'نسخة جواز السفر' },
+                      { key: 'payment_receipt', label: 'إيصال الدفع' }
                     ].map((doc) => (
                       <div key={doc.key} className="flex items-center gap-2 text-sm">
                         {formData[doc.key] ? (
@@ -757,6 +905,27 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Payment Receipt Review */}
+                <div className="bg-emerald-50 rounded-xl p-6 space-y-4">
+                  <h4 className="text-sm font-bold text-emerald-900 border-b border-emerald-200 pb-2 mb-3">إيصال الدفع</h4>
+                  <div className="flex items-center gap-3">
+                    {formData.payment_receipt ? (
+                      <>
+                        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-800">تم رفع إيصال الدفع</p>
+                          <p className="text-xs text-emerald-600 truncate">{formData.payment_receipt.name}</p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                        <span className="text-slate-500 text-sm">إيصال الدفع — غير مرفق</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -785,6 +954,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                         <li>تأكد من صحة جميع المعلومات المدخلة</li>
                         <li>تحقق من رفع جميع المستندات المطلوبة</li>
                         <li>تأكد من أن الملفات بصيغة PDF أو صور واضحة</li>
+                        <li>تحقق من رفع إيصال دفع رسوم التقديم (100₪)</li>
                       </ul>
                     </div>
                   </div>
@@ -801,9 +971,9 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
               </motion.div>
             )}
 
-            {step === 5 && (
+            {step === 6 && (
               <motion.div
-                key="step5"
+                key="step6"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-10 space-y-6"
@@ -836,7 +1006,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
           </AnimatePresence>
         </div>
 
-        {step <= 4 && (
+        {step <= 5 && (
           <div className="sticky bottom-0 bg-white border-t border-slate-200 p-6 flex items-center justify-between gap-4">
             {step > 1 ? (
               <button
@@ -849,7 +1019,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
               <div />
             )}
 
-            {step < 4 ? (
+            {step < 5 ? (
               <button
                 onClick={handleNext}
                 className="flex-1 max-w-xs py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"

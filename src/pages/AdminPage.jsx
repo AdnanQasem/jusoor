@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { scholarshipsAPI, scholarshipFAQAPI } from '../services/api';
+import { scholarshipsAPI, scholarshipFAQAPI, applicationsAPI } from '../services/api';
 import {
   Plus, Trash2, Edit, Save, X, ChevronDown, ChevronUp,
   Building2, Calendar, MapPin, BookOpen, DollarSign,
   Image as ImageIcon, Link as LinkIcon, Star, AlertCircle,
-  CheckCircle, HelpCircle, ArrowLeft
+  CheckCircle, HelpCircle, ArrowLeft, FileText, User, Mail, Phone
 } from 'lucide-react';
 
 function AdminPage() {
   const [activeTab, setActiveTab] = useState('scholarships');
   const [scholarships, setScholarships] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingScholarship, setEditingScholarship] = useState(null);
@@ -50,7 +51,10 @@ function AdminPage() {
 
   useEffect(() => {
     loadScholarships();
-  }, []);
+    if (activeTab === 'applications') {
+      loadApplications();
+    }
+  }, [activeTab]);
 
   const loadScholarships = async () => {
     setLoading(true);
@@ -60,6 +64,19 @@ function AdminPage() {
       setScholarships(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error loading scholarships:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadApplications = async () => {
+    setLoading(true);
+    try {
+      const response = await applicationsAPI.getAll();
+      const data = response.data?.results || response.data || [];
+      setApplications(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error loading applications:', error);
     } finally {
       setLoading(false);
     }
@@ -241,15 +258,46 @@ function AdminPage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('scholarships')}
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'scholarships'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+            }`}
+          >
+            المنح الدراسية
+          </button>
+          <button
+            onClick={() => setActiveTab('applications')}
+            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'applications'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+            }`}
+          >
+            الطلبات
+            {applications.length > 0 && (
+              <span className="mr-2 px-2 py-0.5 bg-white/20 rounded-md text-xs">
+                {applications.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         {loading && !showForm && (
           <div className="text-center py-12">
             <div className="text-slate-500">جاري التحميل...</div>
           </div>
         )}
 
-        {!showForm && (
+        {!showForm && activeTab === 'scholarships' && (
           <div className="grid gap-4">
             {scholarships.map((scholarship) => (
               <div
@@ -304,6 +352,88 @@ function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Applications Section */}
+        {!showForm && activeTab === 'applications' && (
+          <div className="grid gap-4">
+            {applications.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-slate-700 mb-2">لا توجد طلبات بعد</h3>
+                <p className="text-slate-500">لم يتم تقديم أي طلبات للمنح حتى الآن</p>
+              </div>
+            ) : (
+              applications.map((app) => (
+                <div
+                  key={app.id}
+                  className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-shadow"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-bold text-slate-900">{app.full_name}</h3>
+                        <span className={`px-2 py-1 rounded-md text-xs font-semibold ${
+                          app.status === 'submitted' ? 'bg-green-100 text-green-700' :
+                          app.status === 'under_review' ? 'bg-blue-100 text-blue-700' :
+                          app.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
+                          app.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-slate-100 text-slate-700'
+                        }`}>
+                          {app.status === 'submitted' ? 'مُقدم' :
+                           app.status === 'under_review' ? 'قيد المراجعة' :
+                           app.status === 'accepted' ? 'مقبول' :
+                           app.status === 'rejected' ? 'مرفوض' : 'مسودة'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-4 text-sm text-slate-600 mb-3">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-slate-400" />
+                          <span>{app.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-slate-400" />
+                          <span>{app.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-slate-400" />
+                          <span>{app.field_of_study}</span>
+                        </div>
+                      </div>
+                      <div className="text-sm text-slate-500">
+                        قدم على: <span className="font-semibold text-slate-700">{app.scholarship_title || `منحة #${app.scholarship}`}</span>
+                      </div>
+                      <div className="text-xs text-slate-400 mt-2">
+                        {new Date(app.created_at).toLocaleDateString('ar-EG')}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={app.cv}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="السيرة الذاتية"
+                      >
+                        <FileText className="w-5 h-5 text-blue-600" />
+                      </a>
+                      {app.payment_receipt && (
+                        <a
+                          href={app.payment_receipt}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 hover:bg-green-50 rounded-lg transition-colors"
+                          title="إيصال الدفع"
+                        >
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 

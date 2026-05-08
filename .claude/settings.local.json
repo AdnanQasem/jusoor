@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(npx eslint *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(dir C:\\\\Users\\\\AdnanQasem\\\\Documents\\\\Emidiest\\\\amdist\\\\src\\\\pages *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :8000)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\AdnanQasem\\\\Documents\\\\Emidiest\\\\amdist\\\\backend\" -Filter \"*.py\" -Recurse)",
+      "Bash(Select-Object -First 20 FullName)",
+      "Bash(python manage.py makemigrations applications)",
+      "Bash(python manage.py migrate)",
+      "Bash(Select-Object -First 50)"
     ]
   }
 }

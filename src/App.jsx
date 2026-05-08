@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './contexts/AuthContext';
-import { scholarshipsAPI, servicesAPI, serviceOrdersAPI, applicationsAPI, contactAPI, authAPI } from './services/api';
+import { scholarshipsAPI, servicesAPI, serviceOrdersAPI, applicationsAPI, contactAPI, authAPI, scholarshipFAQAPI } from './services/api';
 import iiiImage from './assets/iii.png';
 import logoImage from './assets/logo.png';
 import adImage from './assets/ad.jpg';
+import ApplicationForm from './pages/ApplicationForm';
+import ServiceOrderForm from './pages/ServiceOrderForm';
+import ScholarshipDetailModal from './components/ScholarshipDetailModal';
+import ContactPage from './pages/ContactPage';
 import harvardLogo from './assets/logos/Harvard-Emblema-1536x864.png';
 import cornellLogo from './assets/logos/Cornell-University-Logo-1536x864.png';
 import princetonLogo from './assets/logos/University-of-Princeton-Emblem-1536x864.png';
@@ -48,7 +52,13 @@ import {
   Hourglass,
   RefreshCcw,
   Star,
-  X
+  X,
+  Loader,
+  BookOpen,
+  DollarSign,
+  CheckCircle,
+  ExternalLink,
+  Info
 } from 'lucide-react';
 
 // ==========================================
@@ -335,6 +345,12 @@ const STEPS = [
 // COMPONENTS
 // ==========================================
 
+// Convert Western numerals to Arabic-Indic numerals
+const toArabicIndic = (num) => {
+  const arabicIndicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return String(num).replace(/\d/g, (d) => arabicIndicNumerals[parseInt(d)]);
+};
+
 function AnimatedCounter({ target, suffix = "", duration = 2000 }) {
   const [count, setCount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -373,19 +389,32 @@ function AnimatedCounter({ target, suffix = "", duration = 2000 }) {
   }, [isVisible, target, duration]);
 
   const displayValue = typeof count === 'number' && !isNaN(parseInt(target))
-    ? `${count}${suffix}`
+    ? `${toArabicIndic(count)}${suffix}`
     : target;
 
   return <span ref={ref}>{displayValue}</span>;
 }
 
 function Hero({ onNavigate }) {
+  const [scholarshipCount, setScholarshipCount] = useState(30);
   const stats = [
-    { number: 30, suffix: "+", label: "منحة نشطة", icon: GraduationCap },
+    { number: scholarshipCount, suffix: "+", label: "منحة نشطة", icon: GraduationCap },
     { number: 2000, suffix: "+", label: "طالب مساعد", icon: TrendingUp },
     { number: 48, suffix: "ساعة", label: "وقت المعالجة", icon: Clock },
     { number: 50, suffix: "+", label: "جامعة شريكة", icon: Building2 },
   ];
+
+  useEffect(() => {
+    scholarshipsAPI.getAll()
+      .then(response => {
+        const data = response.data?.results || response.data || [];
+        const activeCount = Array.isArray(data) ? data.length : 0;
+        setScholarshipCount(activeCount);
+      })
+      .catch(err => {
+        console.error('Error fetching scholarship count:', err);
+      });
+  }, []);
 
   return (
     <section id="home" className="min-h-screen flex flex-col bg-white overflow-hidden relative">
@@ -400,12 +429,12 @@ function Hero({ onNavigate }) {
         <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-white/70 to-slate-100/80" />
       </div>
 
-      <div className="flex-1 flex items-center pt-24 pb-12 relative z-10">
+      <div className="flex-1 flex items-center pt-20 pb-12 relative z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-[1320px] mx-auto">
             <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-6 lg:gap-8 items-center">
               {/* Text Content with Premium Container */}
-              <div className="text-right">
+              <div className="text-right order-2 lg:order-1">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -413,54 +442,65 @@ function Hero({ onNavigate }) {
                   className="relative"
                 >
                   {/* Soft overlay container behind text */}
-                  <div className="absolute -inset-3 lg:-inset-5 bg-white/75 backdrop-blur-md rounded-[28px] border border-white/50 shadow-sm shadow-slate-200/30" />
-                  
+                  <div className="absolute -inset-2 lg:-inset-5 bg-white/75 backdrop-blur-md rounded-2xl lg:rounded-[28px] border border-white/50 shadow-sm shadow-slate-200/30" />
+
                   {/* Content */}
-                  <div className="relative z-10 p-5 lg:p-7">
-                    <motion.h1
+                  <div className="relative z-10 p-4 lg:p-7">
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2, duration: 0.6 }}
-                      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-tight mb-6 font-serif"
+                      className="relative"
+                    >
+                      <span className="inline-block px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-bold mb-3 lg:mb-4">
+                        منصة المنح الدراسية الأولى في فلسطين
+                      </span>
+                    </motion.div>
+
+                    <motion.h1
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.6 }}
+                      className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-slate-900 leading-tight mb-4 lg:mb-6 font-serif"
                       style={{ textShadow: '0 1px 2px rgba(255,255,255,0.6)' }}
                     >
-                      فرصتك للدراسة{' '}
-                      <span className="text-blue-700">تبدأ من هنا</span>
+                      <span className="block">منحة أقرب إليك</span>
+                      <span className="block">و<span className="text-blue-700">ملف تقديم</span> يليق بطموحك</span>
                     </motion.h1>
 
                     <motion.p
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4, duration: 0.5 }}
-                      className="text-base sm:text-lg text-slate-700 mb-7 leading-relaxed"
+                      transition={{ delay: 0.5, duration: 0.5 }}
+                      className="text-sm sm:text-base lg:text-lg text-slate-700 mb-5 lg:mb-7 leading-relaxed"
                       style={{ textShadow: '0 1px 1px rgba(255,255,255,0.5)' }}
                     >
-                      نجمع لك أحدث المنح الدراسية، ونُجهز ملفك الاحترافي متكاملًا — من السيرة الذاتية إلى رسالة التحفيز ومتابعة التقديم.
+                      نساعدك تكتشف أحدث المنح الدراسية، ونجهز لك ملف التقديم الاحترافي — من السيرة الذاتية ورسالة التحفيز إلى المتابعة حتى القبول.
                       <br />
-                      <span className="text-slate-900 font-semibold">كل ما تحتاجه في مكان واحد</span>، لتركز أنت على هدفك وتصل إلى القبول بثقة.
+                      <span className="text-slate-900 font-semibold">كل اللي تحتاجه في مكان واحد</span>، عشان تركز أنت على هدفك وتوصل للقبول بثقة.
                     </motion.p>
 
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.5 }}
-                    className="flex flex-col sm:flex-row gap-3"
+                    className="flex flex-col sm:flex-row gap-2 sm:gap-3"
                   >
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => onNavigate('scholarships')}
-                      className="px-7 py-3.5 bg-blue-600 text-white rounded-xl text-base font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-200/40"
+                      className="w-full sm:w-auto px-5 lg:px-7 py-3 lg:py-3.5 bg-blue-600 text-white rounded-xl text-sm lg:text-base font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-200/40"
                     >
                       <span>استعرض المنح المتاحة</span>
-                      <ArrowLeft className="w-5 h-5" />
+                      <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                     </motion.button>
 
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => onNavigate('services')}
-                      className="px-7 py-3.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-base font-semibold hover:bg-slate-50 hover:border-slate-300 transition-colors"
+                      className="w-full sm:w-auto px-5 lg:px-7 py-3 lg:py-3.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm lg:text-base font-semibold hover:bg-slate-50 hover:border-slate-300 transition-colors"
                     >
                       خدماتنا وأسعارنا
                     </motion.button>
@@ -470,18 +510,18 @@ function Hero({ onNavigate }) {
               </div>
 
               {/* Image Column */}
-              <div className="relative">
+              <div className="relative order-1 lg:order-2 mb-6 lg:mb-0">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.7, delay: 0.2 }}
                   className="relative"
                 >
-                  <div className="relative rounded-2xl overflow-hidden shadow-xl">
+                  <div className="relative rounded-xl lg:rounded-2xl overflow-hidden shadow-xl">
                     <img
                       src={iiiImage}
                       alt="Students"
-                      className="w-full h-80 lg:h-[420px] object-cover"
+                      className="w-full h-48 sm:h-64 md:h-72 lg:h-[420px] object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
@@ -535,7 +575,7 @@ function Hero({ onNavigate }) {
 
 
 // Services Section - Premium SaaS Design
-function ServicesSection({ onSelectService }) {
+function ServicesSection({ onSelectService, onNavigateToScholarships }) {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -559,8 +599,35 @@ function ServicesSection({ onSelectService }) {
   if (loading) {
     return (
       <section id="services" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="text-lg text-slate-500">جاري تحميل الخدمات...</div>
+        <div className="max-w-7xl mx-auto px-4">
+          {/* Header Skeleton */}
+          <div className="text-center mb-16">
+            <div className="w-20 h-8 bg-slate-200 rounded-full mx-auto mb-5 animate-pulse" />
+            <div className="w-48 h-10 bg-slate-200 rounded-xl mx-auto mb-4 animate-pulse" />
+            <div className="w-80 h-5 bg-slate-200 rounded mx-auto animate-pulse" />
+          </div>
+          {/* Cards Skeleton */}
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 lg:p-7">
+                <div className="w-3/4 h-6 bg-slate-200 rounded mb-1 animate-pulse" />
+                <div className="w-1/2 h-4 bg-slate-200 rounded mb-4 animate-pulse" />
+                <div className="w-20 h-10 bg-slate-200 rounded mb-4 animate-pulse" />
+                <div className="w-full h-4 bg-slate-200 rounded mb-2 animate-pulse" />
+                <div className="w-2/3 h-4 bg-slate-200 rounded mb-6 animate-pulse" />
+                <div className="h-px bg-slate-200 mb-6" />
+                <div className="space-y-3 mb-6">
+                  {[1, 2, 3].map((f) => (
+                    <div key={f} className="flex items-center gap-3">
+                      <div className="w-5 h-5 bg-slate-200 rounded-md animate-pulse" />
+                      <div className="flex-1 h-4 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+                <div className="w-full h-11 bg-slate-200 rounded-xl animate-pulse" />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     );
@@ -638,7 +705,7 @@ function ServicesSection({ onSelectService }) {
                     <h3 className="text-xl font-bold text-slate-900 mb-1">
                       {service.title}
                     </h3>
-                    <p className="text-sm text-slate-500 font-medium">
+                    <p className="text-sm text-slate-600 font-medium">
                       {service.title_en}
                     </p>
                   </div>
@@ -687,7 +754,13 @@ function ServicesSection({ onSelectService }) {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => onSelectService(service)}
+                    onClick={() => {
+                      if (service.service_type === 'full_application') {
+                        onNavigateToScholarships && onNavigateToScholarships();
+                      } else {
+                        onSelectService(service);
+                      }
+                    }}
                     className={`w-full py-3.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
                       isHighlighted
                         ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-300/50'
@@ -715,7 +788,7 @@ function ServicesSection({ onSelectService }) {
 }
 
 // Scholarships Section - Featured Only
-function ScholarshipsSection({ onViewAll }) {
+function ScholarshipsSection({ onViewAll, onScholarshipSelect }) {
   const [scholarships, setScholarships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -875,7 +948,7 @@ function ScholarshipsSection({ onViewAll }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15 }}
-            className="text-slate-500 max-w-xl mx-auto text-base leading-relaxed"
+            className="text-slate-600 max-w-xl mx-auto text-base leading-relaxed"
           >
             مجموعة مختارة من أفضل المنح المتاحة للطلاب الفلسطينيين
           </motion.p>
@@ -898,7 +971,17 @@ function ScholarshipsSection({ onViewAll }) {
         <div className="grid md:grid-cols-2 gap-6">
           {scholarships.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-slate-500">لا توجد منح مميزة حالياً</p>
+              <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <GraduationCap className="w-7 h-7 text-slate-400" />
+              </div>
+              <p className="text-slate-500 text-lg font-medium mb-2">لا توجد منح مميزة حالياً</p>
+              <button
+                onClick={onViewAll}
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+              >
+                <span>عرض جميع المنح المتاحة</span>
+                <ArrowLeft className="w-4 h-4" />
+              </button>
             </div>
           ) : (
             scholarships.slice(0, 4).map((scholarship, index) => {
@@ -914,7 +997,7 @@ function ScholarshipsSection({ onViewAll }) {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.05 }}
                   whileHover={{ y: -2 }}
-                  onClick={() => setSelectedScholarship(scholarship)}
+                  onClick={() => onScholarshipSelect && onScholarshipSelect(scholarship)}
                   className="group bg-white rounded-[22px] border border-amber-200 shadow-md shadow-amber-100/30 cursor-pointer transition-all duration-300 overflow-hidden"
                 >
                   {/* Image Strip */}
@@ -994,6 +1077,12 @@ function ScholarshipsSection({ onViewAll }) {
 
                     {/* CTA Button */}
                     <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isExpired && onScholarshipSelect) {
+                          onScholarshipSelect(scholarship);
+                        }
+                      }}
                       className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
                         isExpired
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -1016,142 +1105,6 @@ function ScholarshipsSection({ onViewAll }) {
         </div>
       </div>
     </section>
-  );
-}
-
-// Scholarship Detail Modal
-function ScholarshipModal({ scholarship, onClose }) {
-  const daysLeft = Math.ceil((new Date(scholarship.deadline) - new Date()) / (1000 * 60 * 60 * 24));
-  const isExpired = daysLeft <= 0;
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-      >
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center text-5xl shadow-sm">
-              {scholarship.country}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">{scholarship.name}</h2>
-              <p className="text-sm text-slate-500">{scholarship.nameEn}</p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-          >
-            <X className="w-6 h-6 text-slate-500" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Featured Badge */}
-          {scholarship.featured && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-full text-sm font-bold shadow-lg">
-              <Star className="w-4 h-4 fill-current" />
-              منحة مميزة
-            </div>
-          )}
-
-          {/* Key Info Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 rounded-xl">
-              <div className="flex items-center gap-2 text-blue-700 mb-2">
-                <Building2 className="w-5 h-5" />
-                <span className="font-bold text-sm">الجامعة</span>
-              </div>
-              <p className="text-slate-700">{scholarship.university}</p>
-            </div>
-            <div className="p-4 bg-green-50 rounded-xl">
-              <div className="flex items-center gap-2 text-green-700 mb-2">
-                <GraduationCap className="w-5 h-5" />
-                <span className="font-bold text-sm">النوع</span>
-              </div>
-              <p className="text-slate-700">{scholarship.type}</p>
-            </div>
-            <div className="p-4 bg-purple-50 rounded-xl">
-              <div className="flex items-center gap-2 text-purple-700 mb-2">
-                <Wallet className="w-5 h-5" />
-                <span className="font-bold text-sm">التمويل</span>
-              </div>
-              <p className="text-slate-700">{scholarship.amount}</p>
-            </div>
-            <div className={`p-4 rounded-xl ${isExpired ? 'bg-gray-100' : 'bg-orange-50'}`}>
-              <div className={`flex items-center gap-2 ${isExpired ? 'text-gray-700' : 'text-orange-700'} mb-2`}>
-                <Clock className="w-5 h-5" />
-                <span className="font-bold text-sm">الموعد النهائي</span>
-              </div>
-              <p className={`text-slate-700 ${isExpired ? 'text-gray-500' : ''}`}>
-                {isExpired ? 'انتهى التقديم' : `${scholarship.deadline} (${daysLeft} يوم)`}
-              </p>
-            </div>
-          </div>
-
-          {/* Stipend */}
-          {scholarship.stipend && (
-            <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-              <div className="flex items-center gap-2 text-purple-700 mb-2">
-                <HandCoins className="w-5 h-5" />
-                <span className="font-bold text-sm">الراتب الشهري</span>
-              </div>
-              <p className="text-lg font-bold text-purple-800">{scholarship.stipend}</p>
-            </div>
-          )}
-
-          {/* Fields */}
-          <div>
-            <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
-              التخصصات المتاحة
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {scholarship.fields.map((field, i) => (
-                <span key={i} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium">
-                  {field}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Country Info */}
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <div className="flex items-center gap-2 text-slate-700 mb-2">
-              <Globe className="w-5 h-5 text-blue-600" />
-              <span className="font-bold text-sm">الدولة</span>
-            </div>
-            <p className="text-slate-700">{scholarship.countryName}</p>
-          </div>
-
-          {/* CTA */}
-          <div className="flex gap-3 pt-4">
-            <a
-              href="https://wa.me/970599999999"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 py-4 bg-green-600 text-white rounded-xl font-bold text-center hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <MessageCircle className="w-5 h-5" />
-              {isExpired ? 'استفسر عن بدائل' : 'قدّم الآن عبر واتساب'}
-            </a>
-            {!isExpired && (
-              <button
-                onClick={onClose}
-                className="px-6 py-4 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
-              >
-                لاحقاً
-              </button>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    </div>
   );
 }
 
@@ -1194,7 +1147,7 @@ function HowItWorksSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15 }}
-            className="text-slate-500 max-w-xl mx-auto text-base leading-relaxed"
+            className="text-slate-600 max-w-xl mx-auto text-base leading-relaxed"
           >
             نبسط لك عملية التقديم على المنح بخطوات واضحة وسهلة
           </motion.p>
@@ -1279,19 +1232,81 @@ function PaymentModal({ service, onClose }) {
     receipt: null
   });
   const [isDragging, setIsDragging] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) setFormData({ ...formData, receipt: file });
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors({ ...errors, receipt: 'حجم الملف يجب أن يكون أقل من 5 ميجا' });
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        setErrors({ ...errors, receipt: 'يجب رفع صورة (PNG أو JPG)' });
+        return;
+      }
+      setFormData({ ...formData, receipt: file });
+      setErrors({ ...errors, receipt: null });
+    }
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.transactionId.trim()) {
+      newErrors.transactionId = 'رقم العملية مطلوب';
+    } else if (formData.transactionId.length < 5) {
+      newErrors.transactionId = 'رقم العملية غير صحيح';
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'رقم الهاتف مطلوب';
+    } else if (!/^05[0-9]{8}$/.test(formData.phone.replace(/-/g, ''))) {
+      newErrors.phone = 'أدخل رقم هاتف صحيح (059xxxxxxx)';
+    }
+    if (!formData.receipt) {
+      newErrors.receipt = 'يرجى إرفاق إيصال الدفع';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Process payment
-    alert('تم استلام طلبك بنجاح! سنتواصل معك قريباً.');
-    onClose();
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      // Step 1: Create service order
+      const orderData = {
+        service: service.id,
+        transaction_id: formData.transactionId,
+        phone: formData.phone,
+      };
+
+      console.log('Creating service order:', orderData);
+      const response = await serviceOrdersAPI.create(orderData);
+      console.log('Service order created:', response.data);
+      const orderId = response.data.id;
+
+      // Step 2: Upload receipt
+      if (formData.receipt) {
+        console.log('Uploading receipt for order:', orderId);
+        await serviceOrdersAPI.uploadReceipt(orderId, formData.receipt);
+        console.log('Receipt uploaded successfully');
+      }
+
+      alert('تم استلام طلبك بنجاح! سنتواصل معك قريباً.');
+      onClose();
+    } catch (error) {
+      console.error('Payment submission error:', error);
+      console.error('Error response:', error?.response?.data);
+      const msg = error?.response?.data?.detail || error?.response?.data?.message || error?.message || 'حدث خطأ في تقديم الطلب. يرجى المحاولة مرة أخرى.';
+      setErrors({ ...errors, submit: msg });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -1350,12 +1365,24 @@ function PaymentModal({ service, onClose }) {
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.transactionId}
-                  onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, transactionId: e.target.value });
+                    if (errors.transactionId) setErrors({ ...errors, transactionId: null });
+                  }}
                   placeholder="أدخل رقم العملية من PalPay"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg"
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 ${
+                    errors.transactionId
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
+                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-50/50'
+                  }`}
                 />
+                {errors.transactionId && (
+                  <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.transactionId}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -1364,12 +1391,24 @@ function PaymentModal({ service, onClose }) {
                 </label>
                 <input
                   type="tel"
-                  required
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, phone: e.target.value });
+                    if (errors.phone) setErrors({ ...errors, phone: null });
+                  }}
                   placeholder="059-xxxxxxx"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-lg"
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 ${
+                    errors.phone
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
+                      : 'border-slate-200 focus:border-blue-500 focus:ring-blue-50/50'
+                  }`}
                 />
+                {errors.phone && (
+                  <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.phone}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -1380,8 +1419,23 @@ function PaymentModal({ service, onClose }) {
                   onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                   onDragLeave={() => setIsDragging(false)}
                   onDrop={handleFileDrop}
-                  className={`upload-zone border-2 border-dashed rounded-xl p-8 text-center cursor-pointer ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300'
-                    }`}
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => {
+                      const file = e.target.files[0];
+                      if (file) handleFileDrop({ preventDefault: () => {}, dataTransfer: { files: [file] } });
+                    };
+                    input.click();
+                  }}
+                  className={`upload-zone border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+                    errors.receipt
+                      ? 'border-red-300 bg-red-50'
+                      : isDragging
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-300 hover:border-blue-400'
+                  }`}
                 >
                   {formData.receipt ? (
                     <div className="flex items-center justify-center gap-2 text-green-600">
@@ -1391,26 +1445,49 @@ function PaymentModal({ service, onClose }) {
                   ) : (
                     <div>
                       <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                      <p className="text-slate-600 mb-1">اسحب الملف هنا أو تصفح</p>
+                      <p className="text-slate-600 mb-1">اسحب الملف هنا أو اضغط للتصفح</p>
                       <p className="text-sm text-slate-400">PNG, JPG حتى ٥ ميجا</p>
                     </div>
                   )}
                 </div>
+                {errors.receipt && (
+                  <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.receipt}
+                  </p>
+                )}
+                {errors.submit && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-700 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.submit}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="flex-1 py-3 border border-slate-300 rounded-xl font-medium"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 border border-slate-300 rounded-xl font-medium hover:bg-slate-50 transition-colors disabled:opacity-50"
                 >
                   السابق
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  تأكيد الطلب
+                  {isSubmitting ? (
+                    <>
+                      <Loader className="w-4 h-4 animate-spin" />
+                      <span>جاري الإرسال...</span>
+                    </>
+                  ) : (
+                    <span>تأكيد الطلب</span>
+                  )}
                 </button>
               </div>
             </form>
@@ -1517,7 +1594,7 @@ function FAQSection() {
                 >
                   <button
                     onClick={() => toggleFaq(faq.id)}
-                    className="w-full p-5 md:p-6 flex items-center gap-4 text-right"
+                    className="w-full p-4 sm:p-5 md:p-6 flex items-center gap-3 sm:gap-4 text-right min-h-[64px]"
                   >
                     {/* Question */}
                     <span className={`flex-1 font-bold text-right text-lg ${isOpen ? 'text-blue-700' : 'text-slate-900 group-hover:text-blue-700'
@@ -1548,7 +1625,7 @@ function FAQSection() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <div className="p-5 md:p-6 pt-0 text-slate-600 leading-relaxed">
+                    <div className="p-4 sm:p-5 md:p-6 pt-0 text-slate-600 leading-relaxed">
                       {faq.answer}
                     </div>
                   </motion.div>
@@ -1631,7 +1708,7 @@ function ComparisonSection() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-800">الطريقة التقليدية</h3>
-                <p className="text-sm text-slate-500 mt-1">بدون دعم أو تنظيم</p>
+                <p className="text-sm text-slate-600 mt-1">بدون دعم أو تنظيم</p>
               </div>
             </div>
 
@@ -1686,7 +1763,7 @@ function ComparisonSection() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-800">منصة أمديست</h3>
-                <p className="text-sm text-slate-500 mt-1">حل متكامل واحترافي</p>
+                <p className="text-sm text-slate-600 mt-1">حل متكامل واحترافي</p>
               </div>
             </div>
 
@@ -1803,14 +1880,17 @@ function DirectAdmissionsSection() {
                 تبحث عن طلاب متميزين مثلك. لا حاجة للبحث، الجامعات ستأتي إليك.
               </p>
 
-              <motion.button
+              <motion.a
+                href="https://wa.me/970599999999"
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="px-8 py-4 border-2 border-white text-white rounded-full text-lg font-medium hover:bg-white hover:text-slate-900 transition-colors flex items-center gap-2"
               >
                 احصل على عروض القبول
                 <ArrowLeft className="w-5 h-5" />
-              </motion.button>
+              </motion.a>
             </motion.div>
           </div>
 
@@ -1944,7 +2024,7 @@ function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-slate-500" />
-                <span className="text-sm text-slate-400 hover:text-white transition-colors">+970 59-123-4567</span>
+                <a href="tel:972592286907" className="text-sm text-slate-400 hover:text-white transition-colors" dir="ltr">+972 59 228 6907</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-slate-500" />
@@ -1982,15 +2062,18 @@ function Footer() {
 function App() {
   const [activeSection, setActiveSection] = useState('home');
   const [selectedService, setSelectedService] = useState(null);
+  const [selectedScholarship, setSelectedScholarship] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
 
   const handleNavigate = (sectionId) => {
     if (sectionId === 'scholarships') {
       setCurrentPage('scholarships');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     setCurrentPage('home');
     setActiveSection(sectionId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -2025,14 +2108,16 @@ function App() {
         <ScholarshipsPage onNavigate={handleNavigate} />
       ) : currentPage === 'admin' ? (
         <AdminPage />
+      ) : currentPage === 'contact' ? (
+        <ContactPage onNavigate={handleNavigate} />
       ) : (
         <>
           <Header activeSection={activeSection} onNavigate={handleNavigate} />
 
           <main>
             <Hero onNavigate={handleNavigate} />
-            <ScholarshipsSection onViewAll={() => setCurrentPage('scholarships')} />
-            <ServicesSection onSelectService={setSelectedService} />
+            <ScholarshipsSection onViewAll={() => setCurrentPage('scholarships')} onScholarshipSelect={setSelectedScholarship} />
+            <ServicesSection onSelectService={setSelectedService} onNavigateToScholarships={() => setCurrentPage('scholarships')} />
             <ComparisonSection />
             <HowItWorksSection />
             <FAQSection />
@@ -2049,17 +2134,36 @@ function App() {
         href="https://wa.me/970599999999"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-colors"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 sm:gap-3 px-4 py-3 sm:px-5 sm:py-3.5 bg-green-600 text-white rounded-full shadow-lg hover:bg-green-700 transition-colors"
       >
-        <MessageCircle className="w-6 h-6" />
-        <span className="font-bold text-sm">تواصل معنا</span>
+        <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+        <span className="font-bold text-xs sm:text-sm hidden xs:inline">تواصل معنا</span>
       </a>
 
       <AnimatePresence>
         {selectedService && (
-          <PaymentModal
-            service={selectedService}
-            onClose={() => setSelectedService(null)}
+          <>
+            {selectedService.service_type === 'full_application' ? (
+              <PaymentModal
+                service={selectedService}
+                onClose={() => setSelectedService(null)}
+              />
+            ) : (
+              <ServiceOrderForm
+                service={selectedService}
+                onClose={() => setSelectedService(null)}
+                onSubmitSuccess={() => setSelectedService(null)}
+              />
+            )}
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedScholarship && (
+          <ScholarshipDetailModal
+            scholarship={selectedScholarship}
+            onClose={() => setSelectedScholarship(null)}
           />
         )}
       </AnimatePresence>

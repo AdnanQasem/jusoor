@@ -15,7 +15,7 @@ function Header({ activeSection, onNavigate }) {
   ];
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+    <header className="fixed top-0 right-0 left-0 z-[9999] bg-white/95 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Right Side in RTL */}
@@ -37,7 +37,7 @@ function Header({ activeSection, onNavigate }) {
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                className={`px-5 py-2.5 rounded-full text-base font-medium transition-all duration-200 min-h-[44px] ${
                   activeSection === item.id
                     ? 'bg-slate-900 text-white'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -50,7 +50,10 @@ function Header({ activeSection, onNavigate }) {
 
           {/* Actions - Left Side in RTL */}
           <div className="hidden md:flex items-center gap-3">
-            <button className="px-5 py-2.5 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors btn-primary">
+            <button
+              onClick={() => onNavigate('contact')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-full text-base font-medium hover:bg-blue-700 transition-colors min-h-[44px] btn-primary"
+            >
               تواصل معنا
             </button>
           </div>
@@ -65,42 +68,64 @@ function Header({ activeSection, onNavigate }) {
         </div>
       </div>
 
-      {/* Mobile Menu - Slides from Right */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed top-16 right-0 bottom-0 w-72 bg-white shadow-2xl md:hidden"
-          >
-            <div className="p-4 space-y-2">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onNavigate(item.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`block w-full text-right px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                    activeSection === item.id
-                      ? 'bg-slate-900 text-white'
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-              <hr className="my-4 border-slate-200" />
-              <button className="block w-full text-right px-4 py-3 text-slate-600 hover:bg-slate-100 rounded-lg">
-                تسجيل الدخول
-              </button>
-              <button className="block w-full text-right px-4 py-3 bg-blue-600 text-white rounded-lg mt-2">
-                تواصل معنا
-              </button>
-            </div>
-          </motion.div>
+          <>
+            {/* Full screen backdrop - blocks all content */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm md:hidden"
+              style={{ top: '64px', zIndex: 9998 }}
+            />
+            
+            {/* Menu Panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed right-0 top-16 bottom-0 w-80 bg-white shadow-2xl md:hidden"
+              style={{ zIndex: 9999 }}
+            >
+              <div className="p-6 space-y-3">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onNavigate(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`block w-full text-right px-5 py-4 rounded-xl text-base font-medium transition-colors ${
+                      activeSection === item.id
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                
+                <div className="pt-4 mt-4 border-t border-slate-200 space-y-3">
+                  <button className="block w-full text-right px-5 py-4 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors min-h-[48px]">
+                    تسجيل الدخول
+                  </button>
+                  <button
+                    onClick={() => {
+                      onNavigate('contact');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-right px-5 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors min-h-[48px]"
+                  >
+                    تواصل معنا
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </header>

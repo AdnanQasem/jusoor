@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scholarshipsAPI, scholarshipFAQAPI } from '../services/api';
-import { Search, X, Building2, ArrowLeft, Star, Clock, MapPin, BookOpen, DollarSign, Calendar, ChevronDown, ChevronUp, Globe, CheckCircle, ExternalLink, Info, AlertCircle, HelpCircle } from 'lucide-react';
+import { Search, ArrowLeft } from 'lucide-react';
 import Header from '../components/Header';
 import ApplicationForm from './ApplicationForm';
+import ScholarshipDetailModal from '../components/ScholarshipDetailModal';
+
+// Convert Western numerals to Arabic-Indic numerals
+const toArabicIndic = (num) => {
+  const arabicIndicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return String(num).replace(/\d/g, (d) => arabicIndicNumerals[parseInt(d)]);
+};
 
 function ScholarshipsPage({ onNavigate }) {
   const [filter, setFilter] = useState('الكل');
@@ -56,8 +63,8 @@ function ScholarshipsPage({ onNavigate }) {
   const filters = ['الكل', 'البكالوريوس', 'الماجستير', 'الدكتوراه'];
 
   const getFilterCount = (type) => {
-    if (type === 'الكل') return scholarships.length;
-    return scholarships.filter(s => s.scholarship_type === type).length;
+    if (type === 'الكل') return (scholarships || []).length;
+    return (scholarships || []).filter(s => s.type === type).length;
   };
 
   const filteredScholarships = scholarships.filter(s => {
@@ -191,8 +198,42 @@ function ScholarshipsPage({ onNavigate }) {
     return (
       <div className="min-h-screen bg-white">
         <Header activeSection="scholarships" onNavigate={onNavigate} />
-        <div className="pt-24 flex items-center justify-center">
-          <div className="text-lg text-slate-500">جاري تحميل المنح...</div>
+        <div className="pt-24 pb-20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Header Skeleton */}
+            <div className="text-center mb-14">
+              <div className="w-32 h-8 bg-slate-200 rounded-full mx-auto mb-5 animate-pulse" />
+              <div className="w-64 h-10 bg-slate-200 rounded-xl mx-auto mb-4 animate-pulse" />
+              <div className="w-96 h-5 bg-slate-200 rounded mx-auto animate-pulse" />
+            </div>
+            {/* Filter & Search Skeleton */}
+            <div className="flex flex-col lg:flex-row gap-3 mb-10 items-center justify-between">
+              <div className="flex gap-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-24 h-10 bg-slate-200 rounded-lg animate-pulse" />
+                ))}
+              </div>
+              <div className="w-full lg:w-64 h-10 bg-slate-200 rounded-lg animate-pulse" />
+            </div>
+            {/* Cards Grid Skeleton */}
+            <div className="grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                  <div className="h-40 bg-slate-200 animate-pulse" />
+                  <div className="p-5 space-y-3">
+                    <div className="w-3/4 h-5 bg-slate-200 rounded animate-pulse" />
+                    <div className="w-1/2 h-4 bg-slate-200 rounded animate-pulse" />
+                    <div className="h-px bg-slate-200" />
+                    <div className="flex gap-2">
+                      <div className="w-16 h-6 bg-slate-200 rounded animate-pulse" />
+                      <div className="w-16 h-6 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                    <div className="w-full h-10 bg-slate-200 rounded-xl animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -250,7 +291,7 @@ function ScholarshipsPage({ onNavigate }) {
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 min-h-[44px] ${
                       isActive
                         ? 'bg-slate-900 text-white'
                         : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
@@ -260,7 +301,7 @@ function ScholarshipsPage({ onNavigate }) {
                     <span className={`mr-2 px-1.5 py-0.5 rounded-md text-xs ${
                       isActive ? 'bg-white/20' : 'bg-slate-200'
                     }`}>
-                      {count}
+                      {toArabicIndic(count)}
                     </span>
                   </button>
                 );
@@ -296,7 +337,7 @@ function ScholarshipsPage({ onNavigate }) {
           </div>
 
           {/* Scholarships Grid */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {filteredScholarships.map((scholarship, index) => {
               const daysLeft = getDaysLeft(scholarship.deadline);
               const isExpired = daysLeft <= 0;
@@ -428,7 +469,22 @@ function ScholarshipsPage({ onNavigate }) {
                 <Search className="w-7 h-7 text-slate-400" />
               </div>
               <h3 className="text-lg font-bold text-slate-900 mb-2">لا توجد نتائج</h3>
-              <p className="text-slate-500 text-sm">جرب تغيير البحث أو الفلتر</p>
+              <p className="text-slate-500 text-sm mb-6">لم نجد منح تطابق بحثك. جرب أحد الفلاتر التالية:</p>
+
+              <div className="flex flex-wrap gap-2 justify-center">
+                {filters.filter(f => f !== 'الكل').map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => {
+                      setFilter(f);
+                      setSearchQuery('');
+                    }}
+                    className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                  >
+                    عرض {f}
+                  </button>
+                ))}
+              </div>
             </motion.div>
           )}
         </div>
@@ -437,234 +493,10 @@ function ScholarshipsPage({ onNavigate }) {
       {/* Scholarship Modal */}
       <AnimatePresence>
         {selectedScholarship && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedScholarship(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-            >
-              {/* Hero Section */}
-              <div className="relative h-48 overflow-hidden rounded-t-3xl">
-                <img
-                  src={selectedScholarship.image || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=400&fit=crop'}
-                  alt={selectedScholarship.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <div className="flex items-end justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-white/95 backdrop-blur-sm border-2 border-white/50 flex items-center justify-center shadow-lg">
-                        <div className="w-10 h-10">
-                          {COUNTRY_FLAGS[selectedScholarship.country_code] || COUNTRY_FLAGS.EU}
-                        </div>
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-white">{selectedScholarship.title}</h2>
-                        <p className="text-sm text-white/80">{selectedScholarship.title_en}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setSelectedScholarship(null)}
-                      className="p-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full transition-colors"
-                    >
-                      <X className="w-6 h-6 text-white" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-8">
-                {/* Quick Info Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-200">
-                    <div className="flex items-center gap-2 text-blue-700 mb-2">
-                      <Building2 className="w-5 h-5" />
-                      <span className="text-xs font-bold">الجامعة</span>
-                    </div>
-                    <p className="text-sm font-semibold text-slate-800 line-clamp-1">{selectedScholarship.university}</p>
-                  </div>
-                  <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl border border-purple-200">
-                    <div className="flex items-center gap-2 text-purple-700 mb-2">
-                      <BookOpen className="w-5 h-5" />
-                      <span className="text-xs font-bold">النوع</span>
-                    </div>
-                    <p className="text-sm font-semibold text-slate-800">{selectedScholarship.scholarship_type_display || selectedScholarship.scholarship_type}</p>
-                  </div>
-                  <div className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl border border-emerald-200">
-                    <div className="flex items-center gap-2 text-emerald-700 mb-2">
-                      <DollarSign className="w-5 h-5" />
-                      <span className="text-xs font-bold">التمويل</span>
-                    </div>
-                    <p className="text-sm font-semibold text-slate-800">{selectedScholarship.funding_type_display || 'كاملة'}</p>
-                  </div>
-                  <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl border border-amber-200">
-                    <div className="flex items-center gap-2 text-amber-700 mb-2">
-                      <MapPin className="w-5 h-5" />
-                      <span className="text-xs font-bold">البلد</span>
-                    </div>
-                    <p className="text-sm font-semibold text-slate-800">{selectedScholarship.countryName || selectedScholarship.country_code}</p>
-                  </div>
-                </div>
-
-                {/* Countdown Timer */}
-                {timeLeft[selectedScholarship.id] && (
-                  <div className="mb-8 p-6 bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl text-white">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-6 h-6 text-amber-400" />
-                        <span className="font-bold text-lg">الوقت المتبقي للتقديم</span>
-                      </div>
-                      {timeLeft[selectedScholarship.id].days < 7 && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-red-500/20 border border-red-500/30 rounded-full">
-                          <AlertCircle className="w-4 h-4 text-red-400" />
-                          <span className="text-xs font-bold text-red-300">عاجل</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                        <div className="text-3xl font-bold text-amber-400">{timeLeft[selectedScholarship.id].days}</div>
-                        <div className="text-xs text-white/70 mt-1">يوم</div>
-                      </div>
-                      <div className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                        <div className="text-3xl font-bold text-amber-400">{timeLeft[selectedScholarship.id].hours}</div>
-                        <div className="text-xs text-white/70 mt-1">ساعة</div>
-                      </div>
-                      <div className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                        <div className="text-3xl font-bold text-amber-400">{timeLeft[selectedScholarship.id].minutes}</div>
-                        <div className="text-xs text-white/70 mt-1">دقيقة</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Description */}
-                {selectedScholarship.description && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                      <Info className="w-5 h-5 text-blue-600" />
-                      عن المنحة
-                    </h3>
-                    <p className="text-slate-600 leading-relaxed">{selectedScholarship.description}</p>
-                  </div>
-                )}
-
-                {/* Fields of Study */}
-                {selectedScholarship.fields && selectedScholarship.fields.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                      <BookOpen className="w-5 h-5 text-blue-600" />
-                      التخصصات المتاحة
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedScholarship.fields.map((field, i) => (
-                        <span key={i} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium">
-                          {field}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Requirements */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-emerald-600" />
-                    المستندات المطلوبة
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {[
-                      'السيرة الذاتية (CV)',
-                      'كشف العلامات الجامعي',
-                      'شهادة اللغة (IELTS/TOEFL)',
-                      'رسالتي توصية',
-                      'المقال التحفيزي',
-                      'نسخة من جواز السفر'
-                    ].map((req, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl">
-                        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                        <span className="text-sm text-slate-700">{req}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* FAQ Section */}
-                {getScholarshipFAQs(selectedScholarship).length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                      <HelpCircle className="w-5 h-5 text-blue-600" />
-                      الأسئلة الشائعة
-                    </h3>
-                    <div className="space-y-3">
-                      {getScholarshipFAQs(selectedScholarship).map((faq, index) => (
-                        <div
-                          key={index}
-                          className="border border-slate-200 rounded-2xl overflow-hidden transition-all duration-300"
-                        >
-                          <button
-                            onClick={() => toggleFaq(index)}
-                            className="w-full p-4 bg-white hover:bg-slate-50 flex items-center justify-between gap-4 transition-colors"
-                          >
-                            <span className="text-sm font-semibold text-slate-800 text-right flex-1">
-                              {faq.question}
-                            </span>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                              expandedFaq === index ? 'bg-blue-600 text-white rotate-180' : 'bg-slate-100 text-slate-600'
-                            }`}>
-                              <ChevronDown className="w-4 h-4" />
-                            </div>
-                          </button>
-                          <AnimatePresence>
-                            {expandedFaq === index && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="overflow-hidden"
-                              >
-                                <div className="p-4 bg-slate-50 border-t border-slate-100">
-                                  <p className="text-sm text-slate-600 leading-relaxed">{faq.answer}</p>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* CTA Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => setShowApplicationForm(true)}
-                    className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl font-bold text-center hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-3 group"
-                  >
-                    <span>قدّم الآن على المنحة</span>
-                    <ExternalLink className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  </button>
-                  <button
-                    onClick={() => setSelectedScholarship(null)}
-                    className="px-8 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-all duration-300"
-                  >
-                    إغلاق
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+          <ScholarshipDetailModal
+            scholarship={selectedScholarship}
+            onClose={() => setSelectedScholarship(null)}
+          />
         )}
       </AnimatePresence>
       
