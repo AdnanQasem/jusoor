@@ -15,9 +15,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'status', 'status_display',
             'full_name', 'email', 'phone', 'date_of_birth', 'nationality', 'gender',
             'education_level', 'gpa', 'university', 'graduation_year', 'field_of_study',
+            'work_experience',
             'additional_comments',
             'cover_letter', 'personal_statement',
-            'cv', 'transcripts', 'recommendation_letters', 'other_documents',
+            'palestinian_id', 'transcripts', 'recommendation_letters', 'other_documents',
             'payment_receipt',
             'submitted_at', 'external_application_id', 'admin_notes',
             'created_at', 'updated_at'
@@ -35,9 +36,10 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
             'scholarship',
             'full_name', 'email', 'phone', 'date_of_birth', 'nationality', 'gender',
             'education_level', 'gpa', 'university', 'graduation_year', 'field_of_study',
+            'work_experience',
             'additional_comments',
             'cover_letter', 'personal_statement',
-            'cv', 'transcripts', 'recommendation_letters'
+            'palestinian_id', 'transcripts', 'recommendation_letters'
         ]
         read_only_fields = ['id']
 

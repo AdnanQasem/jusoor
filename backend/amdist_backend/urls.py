@@ -43,6 +43,6 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Admin site customization
-admin.site.site_header = "أمديست | لوحة التحكم"
-admin.site.site_title = "أمديست"
+admin.site.site_header = "جسور | لوحة التحكم"
+admin.site.site_title = "جسور"
 admin.site.index_title = "لوحة التحكم"

@@ -424,11 +424,9 @@ function ScholarshipDetailModal({ scholarship, onClose, onSubmitSuccess }) {
             </h3>
             <div className="grid md:grid-cols-2 gap-3">
               {[
-                'السيرة الذاتية (CV)',
-                'كشف العلامات الجامعي',
+                'الهوية الفلسطينية',
+                'كشف العلامات الجامعي (إلزامي)',
                 'شهادة اللغة (IELTS/TOEFL)',
-                'رسالتي توصية',
-                'المقال التحفيزي',
                 'نسخة من جواز السفر'
               ].map((req, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl">

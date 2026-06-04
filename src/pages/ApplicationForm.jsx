@@ -4,7 +4,7 @@ import { applicationsAPI } from '../services/api';
 import {
   X, Upload, User, Mail, Phone, Calendar, GraduationCap,
   FileText, CheckCircle, AlertCircle, Loader, ArrowLeft,
-  BookOpen, Award, Globe, FileCheck, CreditCard, Trash2, PartyPopper
+  BookOpen, Award, Globe, FileCheck, CreditCard, Trash2, PartyPopper, Briefcase
 } from 'lucide-react';
 
 function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
@@ -25,11 +25,14 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     university: '',
     graduation_year: '',
     field_of_study: '',
-    cv: null,
+    has_experience: 'no',
+    experience_company: '',
+    experience_role: '',
+    experience_duration: '',
+    experience_description: '',
+    palestinian_id: null,
     transcript: null,
     language_certificate: null,
-    recommendation_letters: null,
-    motivation_letter: null,
     passport_copy: null,
     payment_receipt: null,
     additional_comments: ''
@@ -101,10 +104,18 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
 
   const validateStep3 = () => {
     const newErrors = {};
+    if (formData.has_experience === 'yes') {
+      if (!formData.experience_company.trim()) newErrors.experience_company = 'اسم الشركة مطلوب';
+      if (!formData.experience_role.trim()) newErrors.experience_role = 'المسمى الوظيفي مطلوب';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep4 = () => {
+    const newErrors = {};
     const requiredDocs = [
-      { key: 'cv', label: 'السيرة الذاتية (CV)' },
-      { key: 'transcript', label: 'كشف العلامات' },
-      { key: 'passport_copy', label: 'نسخة من جواز السفر' }
+      { key: 'transcript', label: 'كشف العلامات' }
     ];
 
     for (const doc of requiredDocs) {
@@ -117,7 +128,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep4 = () => {
+  const validateStep5 = () => {
     const newErrors = {};
     if (!formData.payment_receipt || !(formData.payment_receipt instanceof File)) {
       newErrors.payment_receipt = 'إيصال الدفع مطلوب';
@@ -135,6 +146,8 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
       setStep(4);
     } else if (step === 4 && validateStep4()) {
       setStep(5);
+    } else if (step === 5 && validateStep5()) {
+      setStep(6);
     }
   };
 
@@ -189,6 +202,11 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     setLoading(true);
     setSubmitError('');
     try {
+      // Format work experience
+      const workExperienceText = formData.has_experience === 'yes'
+        ? `الشركة/المؤسسة: ${formData.experience_company}\nالمسمى الوظيفي: ${formData.experience_role}\nالمدة/الفترة: ${formData.experience_duration}\nالوصف والمهام:\n${formData.experience_description}`
+        : 'لا يوجد خبرة مهنية سابقة';
+
       // First create the application with basic data
       const applicationData = {
         scholarship: scholarship.id,
@@ -203,6 +221,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
         university: formData.university || '',
         graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : new Date().getFullYear(),
         field_of_study: formData.field_of_study,
+        work_experience: workExperienceText,
         additional_comments: formData.additional_comments || ''
       };
 
@@ -217,11 +236,9 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
 
       // Then upload all documents
       const documents = [
-        { field: 'cv', type: 'cv' },
+        { field: 'palestinian_id', type: 'palestinian_id' },
         { field: 'transcript', type: 'transcript' },
         { field: 'language_certificate', type: 'language_certificate' },
-        { field: 'recommendation_letters', type: 'recommendation_letters' },
-        { field: 'motivation_letter', type: 'motivation_letter' },
         { field: 'passport_copy', type: 'passport_copy' }
       ];
 
@@ -255,7 +272,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
 
       if (uploadErrors.length > 0) {
         setSubmitError('تم إنشاء الطلب لكن حدث خطأ في رفع بعض المستندات. يمكنك إعادة رفعها لاحقاً.');
-        setStep(6);
+        setStep(7);
         return;
       }
 
@@ -269,7 +286,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
       if (onSubmitSuccess) {
         onSubmitSuccess();
       } else {
-        setStep(6);
+        setStep(7);
       }
     } catch (error) {
       console.error('Error submitting application:', error);
@@ -299,9 +316,10 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
   const steps = [
     { number: 1, title: 'المعلومات الشخصية', icon: User },
     { number: 2, title: 'المعلومات الأكاديمية', icon: GraduationCap },
-    { number: 3, title: 'رفع المستندات', icon: FileText },
-    { number: 4, title: 'إيصال الدفع', icon: CreditCard },
-    { number: 5, title: 'المراجعة والإرسال', icon: CheckCircle }
+    { number: 3, title: 'الخبرة المهنية', icon: Briefcase },
+    { number: 4, title: 'رفع المستندات', icon: FileText },
+    { number: 5, title: 'إيصال الدفع', icon: CreditCard },
+    { number: 6, title: 'المراجعة والإرسال', icon: CheckCircle }
   ];
 
   return (
@@ -321,7 +339,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
       >
         <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between z-10">
           <div className="flex items-center gap-4">
-            {step <= 4 ? (
+            {step <= 5 ? (
               <>
                 <button
                   onClick={onClose}
@@ -341,7 +359,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
               </div>
             )}
           </div>
-          {step <= 4 && (
+          {step <= 5 && (
             <button
               onClick={onClose}
               className="p-2 hover:bg-slate-100 rounded-full transition-colors"
@@ -351,7 +369,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
           )}
         </div>
 
-        {step <= 4 && (
+        {step <= 5 && (
           <div className="p-6 border-b border-slate-100 bg-slate-50/50">
             <div className="flex items-center justify-between">
               {steps.map((s, index) => {
@@ -640,6 +658,140 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                 className="space-y-6"
               >
                 <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-blue-600" />
+                  الخبرة المهنية
+                </h3>
+
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                  <label className="block text-sm font-bold text-slate-700 mb-3">
+                    هل لديك خبرة مهنية سابقة؟
+                  </label>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, has_experience: 'yes' })}
+                      className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all ${
+                        formData.has_experience === 'yes'
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-md shadow-blue-500/10'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      نعم
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({
+                        ...formData,
+                        has_experience: 'no',
+                        experience_company: '',
+                        experience_role: '',
+                        experience_duration: '',
+                        experience_description: ''
+                      })}
+                      className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold transition-all ${
+                        formData.has_experience === 'no'
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-md shadow-blue-500/10'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      لا
+                    </button>
+                  </div>
+                </div>
+
+                {formData.has_experience === 'yes' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="grid md:grid-cols-2 gap-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        اسم الشركة / المؤسسة *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.experience_company}
+                        onChange={(e) => {
+                          setFormData({ ...formData, experience_company: e.target.value });
+                          clearFieldError('experience_company');
+                        }}
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                          errors.experience_company ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                        }`}
+                        placeholder="مثال: شركة جسور"
+                      />
+                      {errors.experience_company && (
+                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.experience_company}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        المسمى الوظيفي *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.experience_role}
+                        onChange={(e) => {
+                          setFormData({ ...formData, experience_role: e.target.value });
+                          clearFieldError('experience_role');
+                        }}
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+                          errors.experience_role ? 'border-red-300 bg-red-50' : 'border-slate-300'
+                        }`}
+                        placeholder="مثال: مطور برمجيات"
+                      />
+                      {errors.experience_role && (
+                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.experience_role}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        الفترة / المدة (مثال: سنتين، أو 2023 - 2025)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.experience_duration}
+                        onChange={(e) => setFormData({ ...formData, experience_duration: e.target.value })}
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="مثال: من يناير 2023 إلى مارس 2025"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">
+                        وصف المهام والخبرات
+                      </label>
+                      <textarea
+                        value={formData.experience_description}
+                        onChange={(e) => setFormData({ ...formData, experience_description: e.target.value })}
+                        rows={4}
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="اكتب تفاصيل المهام والمسؤوليات التي قمت بها..."
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-600" />
                   المستندات المطلوبة
                 </h3>
@@ -651,12 +803,10 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   {[
-                    { key: 'cv', label: 'السيرة الذاتية (CV)', icon: User, required: true },
+                    { key: 'palestinian_id', label: 'الهوية الفلسطينية', icon: User, required: false },
                     { key: 'transcript', label: 'كشف العلامات', icon: FileCheck, required: true },
                     { key: 'language_certificate', label: 'شهادة اللغة (IELTS/TOEFL)', icon: Globe, required: false },
-                    { key: 'recommendation_letters', label: 'رسائل التوصية', icon: Award, required: false },
-                    { key: 'motivation_letter', label: 'المقال التحفيزي', icon: BookOpen, required: false },
-                    { key: 'passport_copy', label: 'نسخة من جواز السفر', icon: FileText, required: true }
+                    { key: 'passport_copy', label: 'نسخة من جواز السفر', icon: FileText, required: false }
                   ].map((doc) => {
                     const Icon = doc.icon;
                     const hasFile = formData[doc.key] !== null;
@@ -756,8 +906,8 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
               </motion.div>
             )}
 
-            {/* Step 4: Payment Receipt */}
-            {step === 4 && (
+            {/* Step 5: Payment Receipt */}
+            {step === 5 && (
               <motion.div
                 key="step4"
                 initial={{ opacity: 0, x: 20 }}
@@ -847,9 +997,9 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
               </motion.div>
             )}
 
-            {step === 5 && (
+            {step === 6 && (
               <motion.div
-                key="step5"
+                key="step6"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -916,15 +1066,40 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                   </div>
                 </div>
 
+                {/* Work Experience Review */}
+                <div className="bg-slate-50 rounded-xl p-6 space-y-4">
+                  <h4 className="text-sm font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">الخبرة المهنية</h4>
+                  {formData.has_experience === 'yes' ? (
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">الشركة / المؤسسة</p>
+                        <p className="text-sm font-semibold text-slate-800">{formData.experience_company}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">المسمى الوظيفي</p>
+                        <p className="text-sm font-semibold text-slate-800">{formData.experience_role}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">المدة / الفترة</p>
+                        <p className="text-sm font-semibold text-slate-800">{formData.experience_duration || '—'}</p>
+                      </div>
+                      <div className="md:col-span-2">
+                        <p className="text-xs text-slate-500 mb-1">تفاصيل المهام والخبرات</p>
+                        <p className="text-sm font-semibold text-slate-800 whitespace-pre-line">{formData.experience_description || '—'}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500">لا توجد خبرة مهنية سابقة</p>
+                  )}
+                </div>
+
                 <div className="bg-slate-50 rounded-xl p-6 space-y-4">
                   <h4 className="text-sm font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">المستندات المرفقة</h4>
                   <div className="grid md:grid-cols-2 gap-3">
                     {[
-                      { key: 'cv', label: 'السيرة الذاتية (CV)' },
+                      { key: 'palestinian_id', label: 'الهوية الفلسطينية' },
                       { key: 'transcript', label: 'كشف العلامات' },
                       { key: 'language_certificate', label: 'شهادة اللغة' },
-                      { key: 'recommendation_letters', label: 'رسائل التوصية' },
-                      { key: 'motivation_letter', label: 'المقال التحفيزي' },
                       { key: 'passport_copy', label: 'نسخة جواز السفر' },
                       { key: 'payment_receipt', label: 'إيصال الدفع' }
                     ].map((doc) => (
@@ -1009,9 +1184,9 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
               </motion.div>
             )}
 
-            {step === 6 && (
+            {step === 7 && (
               <motion.div
-                key="step6"
+                key="step7"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="text-center py-10 space-y-6"
@@ -1044,7 +1219,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
           </AnimatePresence>
         </div>
 
-        {step <= 5 && (
+        {step <= 6 && (
           <div className="sticky bottom-0 bg-white border-t border-slate-200 p-6 flex items-center justify-between gap-4">
             {step > 1 ? (
               <button
@@ -1057,7 +1232,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
               <div />
             )}
 
-            {step < 5 ? (
+            {step < 6 ? (
               <button
                 onClick={handleNext}
                 className="flex-1 max-w-xs py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"

@@ -77,8 +77,8 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         doc_file = request.FILES['document']
 
         # Save document based on type
-        if doc_type == 'cv':
-            application.cv = doc_file
+        if doc_type in ['cv', 'palestinian_id']:
+            application.palestinian_id = doc_file
         elif doc_type in ['transcript', 'transcripts']:
             application.transcripts = doc_file
         elif doc_type in ['recommendation', 'recommendation_letter', 'recommendation_letters']:

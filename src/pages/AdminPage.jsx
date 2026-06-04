@@ -409,15 +409,17 @@ function AdminPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <a
-                        href={app.cv}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="السيرة الذاتية"
-                      >
-                        <FileText className="w-5 h-5 text-blue-600" />
-                      </a>
+                      {app.palestinian_id && (
+                        <a
+                          href={app.palestinian_id}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="الهوية الفلسطينية"
+                        >
+                          <FileText className="w-5 h-5 text-blue-600" />
+                        </a>
+                      )}
                       {app.payment_receipt && (
                         <a
                           href={app.payment_receipt}

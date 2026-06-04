@@ -54,7 +54,7 @@ function Header({ activeSection, onNavigate }) {
             whileHover={{ scale: 1.02 }}
             aria-label="العودة للرئيسية"
           >
-            <img src={logoImage} alt="أمديست" className="h-12 sm:h-14 w-auto" />
+            <img src={logoImage} alt="جسور" className="h-12 sm:h-14 w-auto" />
           </motion.button>
 
           <nav className="hidden lg:flex items-center gap-1">

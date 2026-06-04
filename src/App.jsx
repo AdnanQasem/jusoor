@@ -278,8 +278,8 @@ const COUNTRY_FLAGS = {
 const FAQS = [
   {
     id: 1,
-    question: "ما هي منصة أمديست؟",
-    answer: "أمديست هي منصة متخصصة تهدف إلى مساعدة طلاب فلسطين في غزة على الحصول على منح دراسية دولية. نقدم خدمات متكاملة تشمل البحث عن المنح، إعداد الأوراق، ومتابعة الطلبات حتى القبول.",
+    question: "ما هي منصة جسور؟",
+    answer: "جسور هي منصة متخصصة تهدف إلى مساعدة طلاب فلسطين في غزة على الحصول على منح دراسية دولية. نقدم خدمات متكاملة تشمل البحث عن المنح، إعداد الأوراق، ومتابعة الطلبات حتى القبول.",
     icon: Sparkles
   },
   {
@@ -1567,7 +1567,7 @@ function FAQSection() {
               الأسئلة الشائعة
             </motion.div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-5 font-serif">
-              كل ما تريد معرفته عن <span className="gradient-text-blue">أمديست</span>
+              كل ما تريد معرفته عن <span className="gradient-text-blue">جسور</span>
             </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg leading-relaxed">
               إذا لم تجد إجابة سؤالك، لا تتردد في التواصل معنا
@@ -1693,10 +1693,10 @@ function ComparisonSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            لماذا تختار <span className="text-blue-600">أمديست</span>؟
+            لماذا تختار <span className="text-blue-600">جسور</span>؟
           </h2>
           <p className="text-slate-500 max-w-2xl mx-auto text-lg">
-            مقارنة واضحة توضح الفرق بين الطريقة التقليدية ومنصة أمديست
+            مقارنة واضحة توضح الفرق بين الطريقة التقليدية ومنصة جسور
           </p>
         </div>
 
@@ -1757,14 +1757,14 @@ function ComparisonSection() {
             </div>
           </div>
 
-          {/* AmDist */}
+          {/* Jusoor */}
           <div className="bg-white rounded-2xl p-8 border-2 border-blue-600 shadow-xl shadow-blue-100">
             <div className="flex items-center gap-4 mb-8 pb-6 border-b border-blue-100">
               <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
                 <Check className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-800">منصة أمديست</h3>
+                <h3 className="text-xl font-bold text-slate-800">منصة جسور</h3>
                 <p className="text-sm text-slate-600 mt-1">حل متكامل واحترافي</p>
               </div>
             </div>
@@ -1951,7 +1951,7 @@ function LegacyFooter() {
             <div className="flex items-center gap-3 mb-5">
               <img
                 src={logoImage}
-                alt="أمديست"
+                alt="جسور"
                 className="h-10 w-auto"
               />
             </div>
@@ -2043,7 +2043,7 @@ function LegacyFooter() {
         <div className="border-t border-slate-800 mt-10 pt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-xs text-slate-500">
-              جميع الحقوق محفوظة © ٢٠٢٥ أمديست - منصة المنح الدراسية
+              جميع الحقوق محفوظة © ٢٠٢٥ جسور - منصة المنح الدراسية
             </p>
             <div className="flex items-center gap-5 text-xs text-slate-500">
               <a href="#" className="hover:text-blue-400 transition-colors duration-200">سياسة الخصوصية</a>
@@ -2123,10 +2123,10 @@ function Footer({ onNavigate }) {
           <div>
             <div className="flex items-center gap-3 mb-5">
               <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden">
-                <img src={logoImage} alt="أمديست" className="h-9 w-auto" />
+                <img src={logoImage} alt="جسور" className="h-9 w-auto" />
               </div>
               <div>
-                <p className="text-lg font-bold text-white">أمديست</p>
+                <p className="text-lg font-bold text-white">جسور</p>
                 <p className="text-xs text-slate-500">منصة المنح الدراسية</p>
               </div>
             </div>
@@ -2229,7 +2229,7 @@ function Footer({ onNavigate }) {
         <div className="border-t border-slate-800 mt-10 pt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-right">
             <p className="text-xs text-slate-500">
-              جميع الحقوق محفوظة © {currentYear} أمديست.
+              جميع الحقوق محفوظة © {currentYear} جسور.
             </p>
             <p className="text-xs text-slate-500">
               صمم لدعم الطلاب في الوصول إلى فرص تعليمية أفضل.
@@ -2330,8 +2330,8 @@ function App() {
           <main>
             <Hero onNavigate={handleNavigate} />
             <ScholarshipsSection onViewAll={() => setCurrentPage('scholarships')} onScholarshipSelect={setSelectedScholarship} />
-            <ServicesSection onSelectService={setSelectedService} onNavigateToScholarships={() => setCurrentPage('scholarships')} />
             <ComparisonSection />
+            <ServicesSection onSelectService={setSelectedService} onNavigateToScholarships={() => setCurrentPage('scholarships')} />
             <HowItWorksSection onNavigate={handleNavigate} />
             <FAQSection />
             <PartnersSection />

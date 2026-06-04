@@ -47,6 +47,7 @@ class Application(models.Model):
     university = models.CharField(_('University'), max_length=255, blank=True)
     graduation_year = models.IntegerField(_('Graduation Year'), null=True, blank=True)
     field_of_study = models.CharField(_('Field of Study'), max_length=255, blank=True)
+    work_experience = models.TextField(_('Work Experience'), blank=True)
     additional_comments = models.TextField(_('Additional Comments'), blank=True)
 
     # Application Details
@@ -54,7 +55,7 @@ class Application(models.Model):
     personal_statement = models.TextField(_('Personal Statement'), blank=True)
 
     # Documents
-    cv = models.FileField(_('CV'), upload_to='applications/cv/', null=True, blank=True)
+    palestinian_id = models.FileField(_('Palestinian ID'), upload_to='applications/palestinian_id/', null=True, blank=True)
     transcripts = models.FileField(_('Transcripts'), upload_to='applications/transcripts/', null=True, blank=True)
     recommendation_letters = models.FileField(_('Recommendation Letters'), upload_to='applications/recommendations/', null=True, blank=True)
     other_documents = models.JSONField(_('Other Documents'), default=list)

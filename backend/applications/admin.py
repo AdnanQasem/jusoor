@@ -12,7 +12,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         'email',
         'scholarship',
         'status',
-        'cv_link',
+        'palestinian_id_link',
         'cover_letter_snippet',
         'has_payment_receipt',
         'submitted_at',
@@ -34,8 +34,11 @@ class ApplicationAdmin(admin.ModelAdmin):
         (_('Academic Information'), {
             'fields': ('education_level', 'gpa', 'university', 'graduation_year', 'field_of_study')
         }),
+        (_('Work Experience'), {
+            'fields': ('work_experience',)
+        }),
         (_('Documents'), {
-            'fields': ('cover_letter', 'personal_statement', 'cv', 'transcripts', 'recommendation_letters', 'other_documents', 'payment_receipt')
+            'fields': ('cover_letter', 'personal_statement', 'palestinian_id', 'transcripts', 'recommendation_letters', 'other_documents', 'payment_receipt')
         }),
         (_('Submission'), {
             'fields': ('submitted_at', 'external_application_id')
@@ -57,14 +60,14 @@ class ApplicationAdmin(admin.ModelAdmin):
     has_payment_receipt.boolean = True
     has_payment_receipt.short_description = _('Payment Receipt')
 
-    def cv_link(self, obj):
-        if not obj.cv:
+    def palestinian_id_link(self, obj):
+        if not obj.palestinian_id:
             return '—'
         return format_html(
-            '<a href="{}" target="_blank" rel="noopener noreferrer">عرض السيرة الذاتية</a>',
-            obj.cv.url,
+            '<a href="{}" target="_blank" rel="noopener noreferrer">عرض الهوية الفلسطينية</a>',
+            obj.palestinian_id.url,
         )
-    cv_link.short_description = _('CV')
+    palestinian_id_link.short_description = _('Palestinian ID')
 
     def cover_letter_snippet(self, obj):
         if not obj.cover_letter:
