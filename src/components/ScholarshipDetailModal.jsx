@@ -189,7 +189,7 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-        className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="soft-scrollbar bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
       >
         {/* Hero Section */}
         <div className="relative h-48 overflow-hidden rounded-t-3xl">

@@ -45,6 +45,37 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
     return ACCEPTED_TYPES.includes(`.${ext}`);
   };
 
+  const getErrorMessage = (error, fallbackMessage) => {
+    const data = error?.response?.data;
+
+    if (typeof data === 'string' && data.trim()) {
+      return data;
+    }
+
+    if (data?.detail) {
+      return data.detail;
+    }
+
+    if (data?.message) {
+      return data.message;
+    }
+
+    if (data && typeof data === 'object') {
+      const fieldMessage = Object.entries(data)
+        .map(([field, value]) => {
+          const text = Array.isArray(value) ? value.join(', ') : String(value);
+          return `${field}: ${text}`;
+        })
+        .join(' | ');
+
+      if (fieldMessage) {
+        return fieldMessage;
+      }
+    }
+
+    return error?.message || fallbackMessage;
+  };
+
   const validateStep1 = () => {
     const newErrors = {};
     if (!formData.full_name.trim()) newErrors.full_name = 'الاسم الكامل مطلوب';
@@ -237,7 +268,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
       console.error('Error submitting application:', error);
       console.error('Error response:', error?.response?.data);
       const msg = error?.response?.data?.detail || error?.response?.data?.message || error?.message || 'حدث خطأ في تقديم الطلب. يرجى المحاولة مرة أخرى.';
-      setSubmitError(msg);
+      setSubmitError(getErrorMessage(error, msg));
     } finally {
       setLoading(false);
     }

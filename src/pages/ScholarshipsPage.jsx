@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { scholarshipsAPI, scholarshipFAQAPI } from '../services/api';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, X, Star, Building2, AlertCircle, RefreshCcw } from 'lucide-react';
 import Header from '../components/Header';
 import ApplicationForm from './ApplicationForm';
 import ScholarshipDetailModal from '../components/ScholarshipDetailModal';
@@ -12,8 +12,27 @@ const toArabicIndic = (num) => {
   return String(num).replace(/\d/g, (d) => arabicIndicNumerals[parseInt(d)]);
 };
 
+const FILTERS = [
+  { label: 'الكل', value: 'all' },
+  { label: 'البكالوريوس', value: 'bachelor' },
+  { label: 'الماجستير', value: 'master' },
+  { label: 'الدكتوراه', value: 'phd' },
+];
+
+const SCHOLARSHIP_TYPE_LABELS = {
+  bachelor: 'بكالوريوس',
+  master: 'ماجستير',
+  phd: 'دكتوراه',
+};
+
+const FUNDING_TYPE_LABELS = {
+  full: 'كاملة',
+  partial: 'جزئية',
+  tuition: 'رسوم فقط',
+};
+
 function ScholarshipsPage({ onNavigate }) {
-  const [filter, setFilter] = useState('الكل');
+  const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedScholarship, setSelectedScholarship] = useState(null);
   const [scholarships, setScholarships] = useState([]);
@@ -24,7 +43,10 @@ function ScholarshipsPage({ onNavigate }) {
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [timeLeft, setTimeLeft] = useState({});
 
-  useEffect(() => {
+  const loadScholarships = useCallback(() => {
+    setLoading(true);
+    setError(null);
+
     scholarshipsAPI.getAll()
       .then(response => {
         const data = response.data?.results || response.data || [];
@@ -38,6 +60,10 @@ function ScholarshipsPage({ onNavigate }) {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadScholarships();
+  }, [loadScholarships]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -60,16 +86,25 @@ function ScholarshipsPage({ onNavigate }) {
     return () => clearInterval(timer);
   }, [scholarships]);
 
-  const filters = ['الكل', 'البكالوريوس', 'الماجستير', 'الدكتوراه'];
-
-  const getFilterCount = (type) => {
-    if (type === 'الكل') return (scholarships || []).length;
-    return (scholarships || []).filter(s => s.type === type).length;
+  const getFilterCount = (filterValue) => {
+    if (filterValue === 'all') return (scholarships || []).length;
+    return (scholarships || []).filter(s => s.scholarship_type === filterValue).length;
   };
 
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+
   const filteredScholarships = scholarships.filter(s => {
-    const matchesFilter = filter === 'الكل' || s.scholarship_type === filter;
-    const matchesSearch = s.title?.includes(searchQuery) || s.university?.includes(searchQuery) || s.fields?.some(f => f?.includes(searchQuery));
+    const fields = Array.isArray(s.fields) ? s.fields : [];
+    const searchableText = [
+      s.title,
+      s.title_en,
+      s.university,
+      s.country,
+      ...fields,
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    const matchesFilter = filter === 'all' || s.scholarship_type === filter;
+    const matchesSearch = !normalizedSearchQuery || searchableText.includes(normalizedSearchQuery);
     return matchesFilter && matchesSearch;
   });
 
@@ -216,7 +251,7 @@ function ScholarshipsPage({ onNavigate }) {
               <div className="w-full lg:w-64 h-10 bg-slate-200 rounded-lg animate-pulse" />
             </div>
             {/* Cards Grid Skeleton */}
-            <div className="grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                   <div className="h-40 bg-slate-200 animate-pulse" />
@@ -235,6 +270,35 @@ function ScholarshipsPage({ onNavigate }) {
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header activeSection="scholarships" onNavigate={onNavigate} />
+
+        <section className="min-h-screen pt-24 pb-20 flex items-center">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="max-w-lg mx-auto text-center rounded-2xl border border-red-100 bg-red-50/60 px-6 py-10">
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                <AlertCircle className="w-7 h-7 text-red-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">تعذر تحميل المنح</h2>
+              <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                لم نتمكن من جلب قائمة المنح الآن. تحقق من اتصال الخادم وحاول مرة أخرى.
+              </p>
+              <button
+                onClick={loadScholarships}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors"
+              >
+                <RefreshCcw className="w-4 h-4" />
+                <span>إعادة المحاولة</span>
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -283,29 +347,31 @@ function ScholarshipsPage({ onNavigate }) {
           {/* Controls: Filters + Search */}
           <div className="flex flex-col lg:flex-row gap-3 mb-10 items-center justify-between">
             {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2 justify-center">
-              {filters.map((f) => {
-                const count = getFilterCount(f);
-                const isActive = filter === f;
-                return (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 min-h-[44px] ${
-                      isActive
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    {f}
-                    <span className={`mr-2 px-1.5 py-0.5 rounded-md text-xs ${
-                      isActive ? 'bg-white/20' : 'bg-slate-200'
-                    }`}>
-                      {toArabicIndic(count)}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="w-full lg:w-auto overflow-x-auto pb-1">
+              <div className="flex min-w-max gap-2 justify-start lg:justify-center">
+                {FILTERS.map((f) => {
+                  const count = getFilterCount(f.value);
+                  const isActive = filter === f.value;
+                  return (
+                    <button
+                      key={f.value}
+                      onClick={() => setFilter(f.value)}
+                      className={`px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 min-h-[44px] ${
+                        isActive
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {f.label}
+                      <span className={`mr-2 px-1.5 py-0.5 rounded-md text-xs ${
+                        isActive ? 'bg-white/20' : 'bg-slate-200'
+                      }`}>
+                        {toArabicIndic(count)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Search */}
@@ -332,16 +398,18 @@ function ScholarshipsPage({ onNavigate }) {
           {/* Results Count */}
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
             <p className="text-sm text-slate-500">
-              {filteredScholarships.length} منحة متاحة
+              عرض {toArabicIndic(filteredScholarships.length)} من أصل {toArabicIndic(scholarships.length)} منحة
             </p>
           </div>
 
           {/* Scholarships Grid */}
-          <div className="grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {filteredScholarships.map((scholarship, index) => {
               const daysLeft = getDaysLeft(scholarship.deadline);
               const isExpired = daysLeft <= 0;
               const urgency = getUrgencyStyle(daysLeft);
+              const typeLabel = scholarship.scholarship_type_display || SCHOLARSHIP_TYPE_LABELS[scholarship.scholarship_type] || scholarship.scholarship_type;
+              const fundingLabel = scholarship.funding_type_display || FUNDING_TYPE_LABELS[scholarship.funding_type] || scholarship.funding_type;
 
               return (
                 <motion.div
@@ -351,7 +419,7 @@ function ScholarshipsPage({ onNavigate }) {
                   transition={{ delay: index * 0.04 }}
                   whileHover={{ y: -2 }}
                   onClick={() => setSelectedScholarship(scholarship)}
-                  className={`group bg-white rounded-[22px] border cursor-pointer transition-all duration-300 overflow-hidden ${
+                  className={`group h-full bg-white rounded-[22px] border cursor-pointer transition-all duration-300 overflow-hidden ${
                     scholarship.is_featured
                       ? 'border-amber-200 shadow-md shadow-amber-100/30'
                       : 'border-slate-200 hover:border-blue-200 hover:shadow-lg hover:shadow-slate-200/50'
@@ -392,7 +460,7 @@ function ScholarshipsPage({ onNavigate }) {
                   </div>
 
                   {/* Content */}
-                  <div className="p-5">
+                  <div className="p-5 min-h-[280px] flex flex-col">
                     {/* Title */}
                     <div className="mb-4">
                       <h3 className="font-bold text-slate-900 mb-1 line-clamp-1">
@@ -415,10 +483,10 @@ function ScholarshipsPage({ onNavigate }) {
                     {/* Tags Row */}
                     <div className="flex flex-wrap gap-2 mb-4">
                       <span className="px-2.5 py-1.5 bg-slate-100 text-slate-700 rounded-md text-xs font-medium">
-                        {scholarship.scholarship_type_display || scholarship.scholarship_type}
+                        {typeLabel}
                       </span>
                       <span className="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium">
-                        {scholarship.funding_type_display || scholarship.funding_type}
+                        {fundingLabel}
                       </span>
                       {scholarship.stipend && (
                         <span className="px-2.5 py-1.5 bg-blue-50 text-blue-700 rounded-md text-xs font-medium">
@@ -438,7 +506,7 @@ function ScholarshipsPage({ onNavigate }) {
 
                     {/* CTA Button */}
                     <button
-                      className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+                      className={`w-full mt-auto py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
                         isExpired
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                           : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md'
@@ -472,16 +540,16 @@ function ScholarshipsPage({ onNavigate }) {
               <p className="text-slate-500 text-sm mb-6">لم نجد منح تطابق بحثك. جرب أحد الفلاتر التالية:</p>
 
               <div className="flex flex-wrap gap-2 justify-center">
-                {filters.filter(f => f !== 'الكل').map((f) => (
+                {FILTERS.filter(f => f.value !== 'all').map((f) => (
                   <button
-                    key={f}
+                    key={f.value}
                     onClick={() => {
-                      setFilter(f);
+                      setFilter(f.value);
                       setSearchQuery('');
                     }}
                     className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
                   >
-                    عرض {f}
+                    عرض {f.label}
                   </button>
                 ))}
               </div>

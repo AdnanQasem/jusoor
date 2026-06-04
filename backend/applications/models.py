@@ -19,7 +19,9 @@ class Application(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='applications',
-        verbose_name=_('User')
+        verbose_name=_('User'),
+        null=True,
+        blank=True,
     )
 
     # Scholarship
@@ -85,4 +87,5 @@ class Application(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.full_name or self.user.username} - {self.scholarship.title}"
+        applicant_name = self.full_name or (self.user.username if self.user else 'Guest')
+        return f"{applicant_name} - {self.scholarship.title}"

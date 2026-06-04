@@ -2,6 +2,7 @@ import logging
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Application
 from .serializers import ApplicationSerializer, ApplicationCreateSerializer
@@ -55,6 +56,7 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             )
 
         application.status = 'submitted'
+        application.submitted_at = timezone.now()
         application.save()
 
         return Response({'message': 'تم تقديم الطلب بنجاح'})
@@ -76,9 +78,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         # Save document based on type
         if doc_type == 'cv':
             application.cv = doc_file
-        elif doc_type == 'transcripts':
+        elif doc_type in ['transcript', 'transcripts']:
             application.transcripts = doc_file
-        elif doc_type == 'recommendation':
+        elif doc_type in ['recommendation', 'recommendation_letter', 'recommendation_letters']:
             application.recommendation_letters = doc_file
         else:
             # Add to other documents

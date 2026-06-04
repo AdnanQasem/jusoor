@@ -2064,21 +2064,48 @@ function App() {
   const [selectedService, setSelectedService] = useState(null);
   const [selectedScholarship, setSelectedScholarship] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
+  const [pendingSection, setPendingSection] = useState(null);
 
   const handleNavigate = (sectionId) => {
     if (sectionId === 'scholarships') {
+      setPendingSection(null);
       setCurrentPage('scholarships');
+      setActiveSection('scholarships');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+
+    if (sectionId === 'contact') {
+      setPendingSection(null);
+      setCurrentPage('contact');
+      setActiveSection('contact');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setCurrentPage('home');
     setActiveSection(sectionId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    setPendingSection(sectionId);
   };
+
+  useEffect(() => {
+    if (currentPage !== 'home' || !pendingSection) return;
+
+    const timeoutId = window.setTimeout(() => {
+      if (pendingSection === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const element = document.getElementById(pendingSection);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+
+      setPendingSection(null);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [currentPage, pendingSection]);
 
   // Update active section on scroll
   useEffect(() => {
