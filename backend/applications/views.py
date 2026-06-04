@@ -2,6 +2,7 @@ import logging
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.core.files.storage import default_storage
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Application
@@ -83,11 +84,18 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         elif doc_type in ['recommendation', 'recommendation_letter', 'recommendation_letters']:
             application.recommendation_letters = doc_file
         else:
-            # Add to other documents
-            application.other_documents.append({
+            saved_path = default_storage.save(
+                f'applications/other/{application.id}/{doc_file.name}',
+                doc_file,
+            )
+            other_documents = application.other_documents or []
+            other_documents.append({
                 'type': doc_type,
-                'url': doc_file.name
+                'name': doc_file.name,
+                'url': default_storage.url(saved_path),
+                'path': saved_path,
             })
+            application.other_documents = other_documents
 
         application.save()
 

@@ -14,7 +14,34 @@ const toArabicIndic = (num) => {
   return String(num).replace(/\d/g, (d) => arabicIndicNumerals[parseInt(d)]);
 };
 
-function ScholarshipDetailModal({ scholarship, onClose }) {
+const hasLevelStipendText = (value) => (
+  typeof value === 'string' && /\b(?:Bachelor|Master|PhD)\s*:/i.test(value)
+);
+
+const parseStipendLevels = (value) => {
+  if (!value || typeof value !== 'string') return [];
+
+  const levelLabels = {
+    bachelor: 'بكالوريوس',
+    master: 'ماجستير',
+    phd: 'دكتوراه',
+  };
+  const stipendPattern = /\b(Bachelor|Master|PhD)\s*:\s*([^:]+?)(?=\s+\b(?:Bachelor|Master|PhD)\s*:|$)/gi;
+
+  return [...value.matchAll(stipendPattern)].map((match) => ({
+    level: levelLabels[match[1].toLowerCase()] || match[1],
+    amount: match[2].trim(),
+  }));
+};
+
+const formatStipendAmount = (amount) => (
+  toArabicIndic(String(amount || '')
+    .replace(/\bTRY\b/gi, 'ليرة تركية')
+    .replace(/\/\s*month\b/gi, ' شهريا')
+    .trim())
+);
+
+function ScholarshipDetailModal({ scholarship, onClose, onSubmitSuccess }) {
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [selectedScholarshipFaqs, setSelectedScholarshipFaqs] = useState([]);
@@ -52,10 +79,23 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
     deadline: scholarship.deadline || '',
     image: scholarship.image || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=400&fit=crop',
     is_featured: scholarship.is_featured || scholarship.featured || false,
+    is_expired: scholarship.is_expired || false,
   };
 
-  const daysLeft = Math.ceil((new Date(scholarship.deadline) - new Date()) / (1000 * 60 * 60 * 24));
-  const isExpired = daysLeft <= 0;
+  const fundingText = normalizedScholarship.funding_type_display || normalizedScholarship.funding_type || '';
+  const stipendSource = normalizedScholarship.stipend || (hasLevelStipendText(fundingText) ? fundingText : '');
+  const stipendLevels = parseStipendLevels(stipendSource);
+  const fundingLabel = hasLevelStipendText(fundingText) ? 'حسب المرحلة الدراسية' : (fundingText || 'كاملة');
+
+  const getDaysLeft = (deadline) => {
+    if (!deadline) return null;
+    const deadlineDate = new Date(deadline);
+    if (Number.isNaN(deadlineDate.getTime())) return null;
+    return Math.ceil((deadlineDate - new Date()) / (1000 * 60 * 60 * 24));
+  };
+
+  const daysLeft = normalizedScholarship.is_expired ? 0 : getDaysLeft(normalizedScholarship.deadline);
+  const isExpired = normalizedScholarship.is_expired || (daysLeft !== null && daysLeft <= 0);
 
   useEffect(() => {
     if (scholarship?.id) {
@@ -71,7 +111,7 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
   }, [scholarship?.id]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const updateTimeLeft = () => {
       if (scholarship?.deadline) {
         const today = new Date();
         const deadline = new Date(scholarship.deadline);
@@ -81,9 +121,16 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
           const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           setTimeLeft({ days, hours, minutes });
+        } else {
+          setTimeLeft({});
         }
+      } else {
+        setTimeLeft({});
       }
-    }, 60000);
+    };
+
+    updateTimeLeft();
+    const timer = setInterval(updateTimeLeft, 60000);
     return () => clearInterval(timer);
   }, [scholarship?.deadline]);
 
@@ -169,7 +216,7 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
     )
   };
 
-  if (showApplicationForm) {
+  if (showApplicationForm && !isExpired) {
     return (
       <ApplicationForm
         scholarship={scholarship}
@@ -177,18 +224,22 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
         onSubmitSuccess={() => {
           setShowApplicationForm(false);
           onClose();
-          alert('تم تقديم طلبك بنجاح! سنتواصل معك قريباً.');
+          onSubmitSuccess?.();
         }}
       />
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
         className="soft-scrollbar bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
       >
         {/* Hero Section */}
@@ -245,7 +296,7 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
                 <DollarSign className="w-5 h-5" />
                 <span className="text-xs font-bold">التمويل</span>
               </div>
-              <p className="text-sm font-semibold text-slate-800">{normalizedScholarship.funding_type_display || 'كاملة'}</p>
+              <p className="text-sm font-semibold text-slate-800">{fundingLabel}</p>
             </div>
             <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-2xl border border-amber-200">
               <div className="flex items-center gap-2 text-amber-700 mb-2">
@@ -256,33 +307,82 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
             </div>
           </div>
 
+          {stipendSource && (
+            <div className="mb-8 p-5 bg-emerald-50/70 border border-emerald-100 rounded-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 flex items-center justify-center shadow-sm">
+                  <Wallet className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">الدعم الشهري</h3>
+                  <p className="text-sm text-slate-600">المبلغ حسب المستوى الدراسي</p>
+                </div>
+              </div>
+
+              {stipendLevels.length > 0 ? (
+                <div className="grid sm:grid-cols-3 gap-3">
+                  {stipendLevels.map((item) => (
+                    <div key={item.level} className="rounded-xl bg-white border border-emerald-100 p-4 shadow-sm">
+                      <p className="text-xs font-bold text-emerald-700 mb-2">{item.level}</p>
+                      <p className="text-lg font-bold text-slate-900 leading-snug break-words">
+                        {formatStipendAmount(item.amount)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl bg-white border border-emerald-100 p-4 shadow-sm">
+                  <p className="text-lg font-bold text-slate-900 leading-snug break-words">
+                    {formatStipendAmount(stipendSource)}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isExpired && (
+            <div className="mb-8 p-5 bg-amber-50 border border-amber-200 rounded-2xl">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 text-amber-700" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 mb-1">المنحة انتهت</h3>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    انتهت فترة التقديم لهذه المنحة. انتظر الدورة القادمة، ولا يمكن تعبئة نموذج التقديم الآن.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Countdown Timer */}
-          {timeLeft.days !== undefined && (
-            <div className="mb-8 p-6 bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl text-white">
+          {!isExpired && timeLeft.days !== undefined && (
+            <div className="mb-8 p-6 bg-blue-50/80 border border-blue-100 rounded-2xl text-slate-900">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <Clock className="w-6 h-6 text-amber-400" />
-                  <span className="font-bold text-lg">الوقت المتبقي للتقديم</span>
+                  <Clock className="w-6 h-6 text-blue-600" />
+                  <span className="font-bold text-lg text-slate-900">الوقت المتبقي للتقديم</span>
                 </div>
                 {timeLeft.days < 7 && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-red-500/20 border border-red-500/30 rounded-full">
-                    <AlertCircle className="w-4 h-4 text-red-400" />
-                    <span className="text-xs font-bold text-red-300">عاجل</span>
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-full">
+                    <AlertCircle className="w-4 h-4 text-rose-600" />
+                    <span className="text-xs font-bold text-rose-700">عاجل</span>
                   </div>
                 )}
               </div>
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                  <div className="text-3xl font-bold text-amber-400">{toArabicIndic(timeLeft.days)}</div>
-                  <div className="text-xs text-white/70 mt-1">يوم</div>
+                <div className="text-center p-4 bg-white border border-blue-100 rounded-xl shadow-sm">
+                  <div className="text-3xl font-bold text-blue-700">{toArabicIndic(timeLeft.days)}</div>
+                  <div className="text-xs text-slate-500 mt-1">يوم</div>
                 </div>
-                <div className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                  <div className="text-3xl font-bold text-amber-400">{toArabicIndic(timeLeft.hours)}</div>
-                  <div className="text-xs text-white/70 mt-1">ساعة</div>
+                <div className="text-center p-4 bg-white border border-blue-100 rounded-xl shadow-sm">
+                  <div className="text-3xl font-bold text-blue-700">{toArabicIndic(timeLeft.hours)}</div>
+                  <div className="text-xs text-slate-500 mt-1">ساعة</div>
                 </div>
-                <div className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-                  <div className="text-3xl font-bold text-amber-400">{toArabicIndic(timeLeft.minutes)}</div>
-                  <div className="text-xs text-white/70 mt-1">دقيقة</div>
+                <div className="text-center p-4 bg-white border border-blue-100 rounded-xl shadow-sm">
+                  <div className="text-3xl font-bold text-blue-700">{toArabicIndic(timeLeft.minutes)}</div>
+                  <div className="text-xs text-slate-500 mt-1">دقيقة</div>
                 </div>
               </div>
             </div>
@@ -388,13 +488,20 @@ function ScholarshipDetailModal({ scholarship, onClose }) {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => setShowApplicationForm(true)}
-              className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl font-bold text-center hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-3 group"
-            >
-              <span>قدّم الآن على المنحة</span>
-              <ExternalLink className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            </button>
+            {isExpired ? (
+              <div className="flex-1 py-4 px-5 bg-slate-100 text-slate-500 rounded-2xl font-bold text-center flex items-center justify-center gap-3">
+                <AlertCircle className="w-5 h-5" />
+                <span>المنحة انتهت - انتظر الدورة القادمة</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowApplicationForm(true)}
+                className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl font-bold text-center hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-3 group"
+              >
+                <span>قدّم الآن على المنحة</span>
+                <ExternalLink className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              </button>
+            )}
             <button
               onClick={onClose}
               className="px-8 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-all duration-300"

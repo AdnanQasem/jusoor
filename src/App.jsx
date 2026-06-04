@@ -769,7 +769,7 @@ function ServicesSection({ onSelectService, onNavigateToScholarships }) {
                           : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-blue-200/50'
                     }`}
                   >
-                    {service.is_popular ? 'الأكثر طلباً' : 'اطلب الخدمة'}
+                    {service.service_type === 'full_application' ? 'استعرض المنح' : 'اطلب الخدمة'}
                   </motion.button>
                 </div>
 
@@ -986,7 +986,7 @@ function ScholarshipsSection({ onViewAll, onScholarshipSelect }) {
           ) : (
             scholarships.slice(0, 4).map((scholarship, index) => {
               const daysLeft = getDaysLeft(scholarship.deadline);
-              const isExpired = daysLeft <= 0;
+              const isExpired = scholarship.is_expired === true || daysLeft <= 0;
               const urgency = getUrgencyStyle(daysLeft);
 
               return (
@@ -1090,7 +1090,7 @@ function ScholarshipsSection({ onViewAll, onScholarshipSelect }) {
                       }`}
                       disabled={isExpired}
                     >
-                      {isExpired ? 'انتهى التقديم' : (
+                      {isExpired ? 'المنحة انتهت - انتظر الدورة القادمة' : (
                         <>
                           <span>تفاصيل المنحة</span>
                           <ArrowLeft className="w-4 h-4" />
@@ -1109,7 +1109,7 @@ function ScholarshipsSection({ onViewAll, onScholarshipSelect }) {
 }
 
 // How It Works Section
-function HowItWorksSection() {
+function HowItWorksSection({ onNavigate }) {
   return (
     <section id="how-it-works" className="py-24 bg-white relative overflow-hidden">
       {/* Subtle radial background accents */}
@@ -1212,6 +1212,8 @@ function HowItWorksSection() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            type="button"
+            onClick={() => onNavigate?.('scholarships')}
             className="inline-flex items-center gap-3 px-8 py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-base shadow-md shadow-blue-200/50 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200/60 transition-all duration-300"
           >
             <span>ابدأ رحلتك الآن</span>
@@ -1857,7 +1859,7 @@ function ComparisonItem({ text, type, delay }) {
 }
 
 // Direct Admissions Section
-function DirectAdmissionsSection() {
+function DirectAdmissionsSection({ onNavigate }) {
   return (
     <section className="py-20 bg-gradient-to-br from-slate-900 to-blue-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1880,17 +1882,16 @@ function DirectAdmissionsSection() {
                 تبحث عن طلاب متميزين مثلك. لا حاجة للبحث، الجامعات ستأتي إليك.
               </p>
 
-              <motion.a
-                href="https://wa.me/970599999999"
-                target="_blank"
-                rel="noopener noreferrer"
+              <motion.button
+                type="button"
+                onClick={() => onNavigate?.('scholarships')}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="px-8 py-4 border-2 border-white text-white rounded-full text-lg font-medium hover:bg-white hover:text-slate-900 transition-colors flex items-center gap-2"
               >
                 احصل على عروض القبول
                 <ArrowLeft className="w-5 h-5" />
-              </motion.a>
+              </motion.button>
             </motion.div>
           </div>
 
@@ -1915,7 +1916,7 @@ function DirectAdmissionsSection() {
 }
 
 // Footer Component
-function Footer() {
+function LegacyFooter() {
   const socialLinks = [
     { name: 'فيسبوك', icon: MessageCircle, href: '#' },
     { name: 'تويتر', icon: Globe, href: '#' },
@@ -2055,6 +2056,191 @@ function Footer() {
   );
 }
 
+function Footer({ onNavigate }) {
+  const currentYear = toArabicIndic(new Date().getFullYear());
+  const quickLinks = [
+    { label: 'الرئيسية', target: 'home' },
+    { label: 'المنح', target: 'scholarships' },
+    { label: 'الخدمات', target: 'services' },
+    { label: 'كيف نعمل', target: 'how-it-works' },
+    { label: 'الأسئلة الشائعة', target: 'faq' },
+    { label: 'تواصل معنا', target: 'contact' },
+  ];
+
+  const services = [
+    'التقديم الشامل',
+    'السيرة الذاتية',
+    'رسالة التحفيز',
+    'الترجمة',
+    'المتابعة',
+  ];
+
+  const contactLinks = [
+    { label: '+972 59 228 6907', href: 'tel:+972592286907', icon: Phone, dir: 'ltr' },
+    { label: 'info@amdist.ps', href: 'mailto:info@amdist.ps', icon: Mail, dir: 'ltr' },
+    { label: 'غزة، فلسطين', href: null, icon: MapPin },
+  ];
+
+  const socialLinks = [
+    { name: 'واتساب', href: 'https://wa.me/970592286907', icon: MessageCircle },
+    { name: 'البريد الإلكتروني', href: 'mailto:info@amdist.ps', icon: Mail },
+    { name: 'اتصال مباشر', href: 'tel:+972592286907', icon: Phone },
+  ];
+
+  return (
+    <footer className="bg-slate-950 text-slate-300">
+      <div className="border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+            <div>
+              <p className="text-sm font-semibold text-blue-300 mb-2">جاهز تبدأ؟</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">اختصر طريقك للمنحة المناسبة</h2>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => onNavigate?.('scholarships')}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 transition-colors"
+              >
+                استعرض المنح
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate?.('contact')}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/5 text-white border border-white/10 rounded-xl font-semibold hover:bg-white/10 transition-colors"
+              >
+                تواصل معنا
+                <MessageCircle className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden">
+                <img src={logoImage} alt="أمديست" className="h-9 w-auto" />
+              </div>
+              <div>
+                <p className="text-lg font-bold text-white">أمديست</p>
+                <p className="text-xs text-slate-500">منصة المنح الدراسية</p>
+              </div>
+            </div>
+
+            <p className="text-sm leading-7 text-slate-400 max-w-sm">
+              نساعد الطلاب على اكتشاف المنح المناسبة وتجهيز ملفات تقديم مرتبة وواضحة، من البحث حتى إرسال الطلب.
+            </p>
+
+            <div className="flex gap-2.5 mt-6">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target={social.href.startsWith('http') ? '_blank' : undefined}
+                    rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-500 hover:bg-blue-600 transition-colors"
+                    aria-label={social.name}
+                    title={social.name}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-bold text-white mb-4">روابط سريعة</h3>
+            <ul className="space-y-3">
+              {quickLinks.map((link) => (
+                <li key={link.target}>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate?.(link.target)}
+                    className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
+                  >
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-bold text-white mb-4">الخدمات</h3>
+            <ul className="space-y-3">
+              {services.map((service) => (
+                <li key={service}>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate?.('services')}
+                    className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
+                  >
+                    {service}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-bold text-white mb-4">معلومات التواصل</h3>
+            <ul className="space-y-3">
+              {contactLinks.map((item) => {
+                const Icon = item.icon;
+                const content = (
+                  <>
+                    <Icon className="w-4 h-4 text-blue-300 flex-shrink-0" />
+                    <span dir={item.dir} className="text-sm">{item.label}</span>
+                  </>
+                );
+
+                return (
+                  <li key={item.label} className="flex items-center gap-3 text-slate-400">
+                    {item.href ? (
+                      <a href={item.href} className="flex items-center gap-3 hover:text-white transition-colors">
+                        {content}
+                      </a>
+                    ) : (
+                      content
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => onNavigate?.('contact')}
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-blue-300 hover:text-blue-200 transition-colors"
+            >
+              افتح صفحة التواصل
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-800 mt-10 pt-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-right">
+            <p className="text-xs text-slate-500">
+              جميع الحقوق محفوظة © {currentYear} أمديست.
+            </p>
+            <p className="text-xs text-slate-500">
+              صمم لدعم الطلاب في الوصول إلى فرص تعليمية أفضل.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 // ==========================================
 // MAIN APP
 // ==========================================
@@ -2146,13 +2332,13 @@ function App() {
             <ScholarshipsSection onViewAll={() => setCurrentPage('scholarships')} onScholarshipSelect={setSelectedScholarship} />
             <ServicesSection onSelectService={setSelectedService} onNavigateToScholarships={() => setCurrentPage('scholarships')} />
             <ComparisonSection />
-            <HowItWorksSection />
+            <HowItWorksSection onNavigate={handleNavigate} />
             <FAQSection />
             <PartnersSection />
-            <DirectAdmissionsSection />
+            <DirectAdmissionsSection onNavigate={handleNavigate} />
           </main>
 
-          <Footer />
+          <Footer onNavigate={handleNavigate} />
         </>
       )}
 
@@ -2191,6 +2377,10 @@ function App() {
           <ScholarshipDetailModal
             scholarship={selectedScholarship}
             onClose={() => setSelectedScholarship(null)}
+            onSubmitSuccess={() => {
+              setSelectedScholarship(null);
+              handleNavigate('home');
+            }}
           />
         )}
       </AnimatePresence>

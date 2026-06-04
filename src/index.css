@@ -115,6 +115,8 @@
 html {
   scroll-behavior: smooth;
   direction: rtl;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -124,10 +126,13 @@ body {
   min-height: 100vh;
   direction: rtl;
   font-family: 'Thmanyah Sans', 'Segoe UI', Tahoma, sans-serif;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 #root {
   width: 100%;
+  overflow-x: hidden;
 }
 
 /* ==========================================

@@ -1,13 +1,25 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from .models import Application
 
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ['id', 'full_name', 'email', 'scholarship', 'status', 'has_payment_receipt', 'submitted_at', 'created_at']
-    list_filter = ['status', 'created_at']
-    search_fields = ['full_name', 'email', 'scholarship__title']
+    list_display = [
+        'id',
+        'full_name',
+        'email',
+        'scholarship',
+        'status',
+        'cv_link',
+        'cover_letter_snippet',
+        'has_payment_receipt',
+        'submitted_at',
+        'created_at',
+    ]
+    list_filter = ['status', 'scholarship', 'education_level', 'created_at']
+    search_fields = ['full_name', 'email', 'scholarship__title', 'cover_letter']
     ordering = ['-created_at']
     date_hierarchy = 'created_at'
     readonly_fields = ['submitted_at', 'created_at', 'updated_at']
@@ -44,3 +56,19 @@ class ApplicationAdmin(admin.ModelAdmin):
         return False
     has_payment_receipt.boolean = True
     has_payment_receipt.short_description = _('Payment Receipt')
+
+    def cv_link(self, obj):
+        if not obj.cv:
+            return '—'
+        return format_html(
+            '<a href="{}" target="_blank" rel="noopener noreferrer">عرض السيرة الذاتية</a>',
+            obj.cv.url,
+        )
+    cv_link.short_description = _('CV')
+
+    def cover_letter_snippet(self, obj):
+        if not obj.cover_letter:
+            return '—'
+        text = obj.cover_letter.strip().replace('\n', ' ')
+        return text[:90] + ('…' if len(text) > 90 else '')
+    cover_letter_snippet.short_description = _('Cover Letter')

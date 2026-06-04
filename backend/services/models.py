@@ -62,7 +62,9 @@ class ServiceOrder(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='service_orders',
-        verbose_name=_('User')
+        verbose_name=_('User'),
+        null=True,
+        blank=True,
     )
     
     # Service
@@ -76,6 +78,17 @@ class ServiceOrder(models.Model):
     # Order Details
     status = models.CharField(_('Status'), max_length=20, choices=STATUS_CHOICES, default='pending')
     notes = models.TextField(_('Notes'), blank=True)
+
+    # Customer details
+    full_name = models.CharField(_('Full Name'), max_length=255, blank=True)
+    email = models.EmailField(_('Email'), blank=True)
+    phone = models.CharField(_('Phone'), max_length=20, blank=True)
+    university = models.CharField(_('University'), max_length=255, blank=True)
+    field_of_study = models.CharField(_('Field of Study'), max_length=255, blank=True)
+    graduation_year = models.IntegerField(_('Graduation Year'), null=True, blank=True)
+    gpa = models.CharField(_('GPA'), max_length=20, blank=True)
+    service_details = models.JSONField(_('Service Details'), default=dict, blank=True)
+    service_documents = models.JSONField(_('Service Documents'), default=list, blank=True)
     
     # Payment
     payment_method = models.CharField(_('Payment Method'), max_length=20, default='palpay')
@@ -97,8 +110,23 @@ class ServiceOrder(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Order #{self.id} - {self.user.username} - {self.service.title}"
+        customer = self.full_name or (self.user.username if self.user else 'Guest')
+        return f"Order #{self.id} - {customer} - {self.service.title}"
     
     @property
     def is_paid(self):
         return self.status == 'paid'
+
+
+class CVServiceOrder(ServiceOrder):
+    class Meta:
+        proxy = True
+        verbose_name = _('طلب السيرة الذاتية')
+        verbose_name_plural = _('طلبات السيرة الذاتية')
+
+
+class CoverLetterServiceOrder(ServiceOrder):
+    class Meta:
+        proxy = True
+        verbose_name = _('طلب رسالة التحفيز')
+        verbose_name_plural = _('طلبات رسالة التحفيز')

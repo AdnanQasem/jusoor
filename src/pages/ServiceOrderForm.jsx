@@ -1,19 +1,68 @@
-import { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { servicesAPI, serviceOrdersAPI } from '../services/api';
+import { useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  X, Upload, User, Mail, Phone, FileText, CheckCircle, AlertCircle, Loader, ArrowLeft,
-  GraduationCap, BookOpen, CreditCard, PartyPopper
+  AlertCircle,
+  ArrowLeft,
+  BookOpen,
+  CheckCircle,
+  CreditCard,
+  FileText,
+  Loader,
+  PartyPopper,
+  Upload,
+  User,
+  X,
 } from 'lucide-react';
-import Header from '../components/Header';
+import { serviceOrdersAPI } from '../services/api';
+
+const ACCEPTED_DOCUMENT_TYPES = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
+const ACCEPTED_RECEIPT_TYPES = ['.jpg', '.jpeg', '.png'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+const SERVICE_COPY = {
+  cv: {
+    title: 'طلب سيرة ذاتية احترافية',
+    subtitle: 'أدخل معلوماتك وسنجهز لك سيرة مناسبة للمنح والجامعات.',
+    detailsTitle: 'تفاصيل السيرة الذاتية',
+    goalLabel: 'ما الهدف من السيرة؟',
+    goalPlaceholder: 'مثال: التقديم لمنح ماجستير، جامعة معينة، تدريب، أو فرصة عمل...',
+    targetLabel: 'المنحة أو المجال المستهدف',
+    targetPlaceholder: 'مثال: منح تركيا، Erasmus، هندسة حاسوب...',
+    optionalFileTitle: 'سيرة حالية إن وجدت',
+    optionalFileHint: 'اختياري، مش ضروري ترفع سيرة قديمة.',
+  },
+  cover_letter: {
+    title: 'طلب رسالة تحفيز',
+    subtitle: 'أعطنا تفاصيل الفرصة حتى نكتب رسالة تحفيز مخصصة ومقنعة.',
+    detailsTitle: 'تفاصيل رسالة التحفيز',
+    goalLabel: 'لماذا تريد هذه الرسالة؟',
+    goalPlaceholder: 'اكتب هدفك من الرسالة وأهم النقاط التي تريد إبرازها...',
+    targetLabel: 'اسم المنحة أو الجامعة المستهدفة',
+    targetPlaceholder: 'مثال: Erasmus Mundus، جامعة قطر، منحة تركيا...',
+    optionalFileTitle: 'CV أو ملف داعم إن وجد',
+    optionalFileHint: 'اختياري، يساعدنا فقط على تخصيص الرسالة بشكل أفضل.',
+  },
+};
 
 function ServiceOrderForm({ service, onClose, onSubmitSuccess }) {
+  const fileInputRefs = useRef({});
+  const copy = SERVICE_COPY[service?.service_type] || {
+    title: 'طلب خدمة',
+    subtitle: 'أدخل بياناتك وسنراجع الطلب ونتواصل معك.',
+    detailsTitle: 'تفاصيل الخدمة',
+    goalLabel: 'اشرح ما تحتاجه',
+    goalPlaceholder: 'اكتب التفاصيل التي تساعدنا على تنفيذ الخدمة...',
+    targetLabel: 'الهدف أو الجهة المستهدفة',
+    targetPlaceholder: 'مثال: منحة، جامعة، تخصص، أو موعد نهائي...',
+    optionalFileTitle: 'ملف داعم إن وجد',
+    optionalFileHint: 'اختياري.',
+  };
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitNotice, setSubmitNotice] = useState('');
   const [uploadProgress, setUploadProgress] = useState({});
-  const fileInputRefs = useRef({});
-  
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -22,756 +71,708 @@ function ServiceOrderForm({ service, onClose, onSubmitSuccess }) {
     field_of_study: '',
     graduation_year: '',
     gpa: '',
-    cv_file: null,
-    old_cv: null,
-    motivation_letter: null,
-    job_description: null,
-    additional_info: ''
+    service_goal: '',
+    target_name: '',
+    deadline: '',
+    preferred_language: 'العربية',
+    additional_info: '',
+    optional_document: null,
+    payment_receipt: null,
+    transaction_id: '',
   });
 
-  const [errors, setErrors] = useState({});
+  const steps = [
+    { number: 1, title: 'المعلومات الشخصية', icon: User },
+    { number: 2, title: 'تفاصيل الخدمة', icon: FileText },
+    { number: 3, title: 'المراجعة والدفع', icon: CreditCard },
+    { number: 4, title: 'تم الإرسال', icon: PartyPopper },
+  ];
 
-  const ACCEPTED_TYPES = ['.pdf', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const clearFieldError = (field) => {
+    if (!errors[field]) return;
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const updateField = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    clearFieldError(field);
+  };
 
   const validateStep1 = () => {
-    const newErrors = {};
-    if (!formData.full_name.trim()) newErrors.full_name = 'الاسم الكامل مطلوب';
-    if (!formData.email.trim()) newErrors.email = 'البريد الإلكتروني مطلوب';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'البريد الإلكتروني غير صحيح';
-    if (!formData.phone.trim()) newErrors.phone = 'رقم الهاتف مطلوب';
-    if (!formData.university.trim()) newErrors.university = 'الجامعة مطلوبة';
-    if (!formData.field_of_study.trim()) newErrors.field_of_study = 'التخصص مطلوب';
+    const nextErrors = {};
+    if (!formData.full_name.trim()) nextErrors.full_name = 'الاسم الكامل مطلوب';
+    if (!formData.email.trim()) nextErrors.email = 'البريد الإلكتروني مطلوب';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) nextErrors.email = 'البريد الإلكتروني غير صحيح';
+    if (!formData.phone.trim()) nextErrors.phone = 'رقم الهاتف مطلوب';
+    if (!formData.university.trim()) nextErrors.university = 'اسم الجامعة أو المؤسسة مطلوب';
+    if (!formData.field_of_study.trim()) nextErrors.field_of_study = 'التخصص أو المجال مطلوب';
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const validateStep2 = () => {
-    const newErrors = {};
-    if (service.service_type === 'cv') {
-      if (!formData.old_cv) {
-        newErrors.old_cv = 'السيرة الذاتية القديمة مطلوبة';
-      }
-    } else if (service.service_type === 'cover_letter') {
-      if (!formData.cv_file) {
-        newErrors.cv_file = 'السيرة الذاتية مطلوبة';
-      }
-      if (!formData.job_description) {
-        newErrors.job_description = 'وصف الوظيفة/المنحة مطلوب';
-      }
+    const nextErrors = {};
+    if (!formData.service_goal.trim()) nextErrors.service_goal = 'اكتب تفاصيل الطلب حتى نقدر نجهزه بشكل صحيح';
+    if (service?.service_type === 'cover_letter' && !formData.target_name.trim()) {
+      nextErrors.target_name = 'اسم المنحة أو الجهة المستهدفة مطلوب لرسالة التحفيز';
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleNext = () => {
-    if (step === 1 && validateStep1()) {
-      setStep(2);
-    } else if (step === 2 && validateStep2()) {
-      setStep(3);
-    }
+    if (step === 1 && validateStep1()) setStep(2);
+    else if (step === 2 && validateStep2()) setStep(3);
   };
 
   const handleBack = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) setStep((current) => current - 1);
   };
 
-  const clearFieldError = (field) => {
-    if (errors[field]) {
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next[field];
-        return next;
-      });
-    }
-  };
-
-  const handleFileChange = (field, file) => {
-    if (!file) return;
+  const validateFile = (field, file, acceptedTypes) => {
+    if (!file) return false;
 
     if (file.size > MAX_FILE_SIZE) {
-      setErrors(prev => ({ ...prev, [field]: 'حجم الملف يجب أن لا يتجاوز 10MB' }));
-      return;
+      setErrors((prev) => ({ ...prev, [field]: 'حجم الملف يجب أن لا يتجاوز 10MB' }));
+      return false;
     }
 
-    if (!ACCEPTED_TYPES.some(ext => file.name.toLowerCase().endsWith(ext))) {
-      setErrors(prev => ({ ...prev, [field]: 'صيغة الملف غير مقبولة' }));
-      return;
+    if (!acceptedTypes.some((ext) => file.name.toLowerCase().endsWith(ext))) {
+      setErrors((prev) => ({ ...prev, [field]: 'صيغة الملف غير مقبولة' }));
+      return false;
     }
 
-    setFormData(prev => ({ ...prev, [field]: file }));
-    setErrors(prev => {
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
+    return true;
+  };
+
+  const handleFileChange = (field, file, acceptedTypes = ACCEPTED_DOCUMENT_TYPES) => {
+    if (!validateFile(field, file, acceptedTypes)) return;
+    updateField(field, file);
   };
 
   const handleRemoveFile = (field) => {
-    setFormData(prev => ({ ...prev, [field]: null }));
-    setUploadProgress(prev => {
+    setFormData((prev) => ({ ...prev, [field]: null }));
+    setUploadProgress((prev) => {
       const next = { ...prev };
       delete next[field];
       return next;
     });
-    if (fileInputRefs.current[field]) {
-      fileInputRefs.current[field].value = '';
-    }
+    if (fileInputRefs.current[field]) fileInputRefs.current[field].value = '';
   };
 
   const handleSubmit = async () => {
     setLoading(true);
-    setSubmitError('');
+    setSubmitNotice('');
+
     try {
-      const orderData = {
+      const serviceDetails = {
+        service_type: service?.service_type,
+        service_goal: formData.service_goal,
+        target_name: formData.target_name,
+        deadline: formData.deadline,
+        preferred_language: formData.preferred_language,
+        additional_info: formData.additional_info,
+      };
+
+      const response = await serviceOrdersAPI.create({
         service: service.id,
         full_name: formData.full_name,
         email: formData.email,
         phone: formData.phone,
         university: formData.university,
         field_of_study: formData.field_of_study,
-        graduation_year: formData.graduation_year || '',
-        gpa: formData.gpa || '',
-        additional_info: formData.additional_info || ''
-      };
+        graduation_year: formData.graduation_year || null,
+        gpa: formData.gpa,
+        notes: formData.additional_info,
+        service_details: serviceDetails,
+        payment_method: 'palpay',
+        transaction_id: formData.transaction_id,
+      });
 
-      const response = await serviceOrdersAPI.create(orderData);
-      const orderId = response.data.id;
+      const orderId = response.data?.id;
+      if (!orderId) throw new Error('لم يتم إرجاع رقم الطلب من الخادم');
 
-      const documents = [];
-      if (service.service_type === 'cv') {
-        documents.push({ field: 'old_cv', type: 'old_cv' });
-      } else if (service.service_type === 'cover_letter') {
-        documents.push({ field: 'cv_file', type: 'cv_file' });
-        documents.push({ field: 'job_description', type: 'job_description' });
-      }
+      const uploadErrors = [];
 
-      let uploadErrors = [];
-      for (const doc of documents) {
-        if (formData[doc.field]) {
-          setUploadProgress(prev => ({ ...prev, [doc.field]: 'uploading' }));
-          try {
-            await serviceOrdersAPI.uploadDocument(orderId, formData[doc.field], doc.type);
-            setUploadProgress(prev => ({ ...prev, [doc.field]: 'uploaded' }));
-          } catch (error) {
-            console.error(`Error uploading ${doc.field}:`, error);
-            setUploadProgress(prev => ({ ...prev, [doc.field]: 'error' }));
-            uploadErrors.push(doc.field);
-          }
+      if (formData.optional_document) {
+        setUploadProgress((prev) => ({ ...prev, optional_document: 'uploading' }));
+        try {
+          await serviceOrdersAPI.uploadDocument(orderId, formData.optional_document, 'supporting_document');
+          setUploadProgress((prev) => ({ ...prev, optional_document: 'uploaded' }));
+        } catch (error) {
+          console.error('Error uploading supporting document:', error);
+          setUploadProgress((prev) => ({ ...prev, optional_document: 'error' }));
+          uploadErrors.push('optional_document');
         }
       }
 
-      if (uploadErrors.length > 0) {
-        setSubmitError('تم إنشاء الطلب لكن حدث خطأ في رفع بعض المستندات.');
+      if (formData.payment_receipt) {
+        setUploadProgress((prev) => ({ ...prev, payment_receipt: 'uploading' }));
+        try {
+          await serviceOrdersAPI.uploadReceipt(orderId, formData.payment_receipt);
+          setUploadProgress((prev) => ({ ...prev, payment_receipt: 'uploaded' }));
+        } catch (error) {
+          console.error('Error uploading payment receipt:', error);
+          setUploadProgress((prev) => ({ ...prev, payment_receipt: 'error' }));
+          uploadErrors.push('payment_receipt');
+        }
       }
 
-      try {
-        await serviceOrdersAPI.submit(orderId);
-      } catch (submitError) {
-        console.log('Submit endpoint not available');
+      await serviceOrdersAPI.submit(orderId);
+
+      if (uploadErrors.length > 0) {
+        setSubmitNotice('تم إنشاء الطلب، لكن تعذر رفع بعض الملفات. يمكنك إرسالها لاحقا عبر صفحة التواصل أو واتساب.');
       }
 
       setStep(4);
     } catch (error) {
-      console.error('Error submitting order:', error);
-      const msg = error?.response?.data?.detail || error?.response?.data?.message || error?.message || 'حدث خطأ في تقديم الطلب.';
-      setSubmitError(msg);
+      console.error('Error submitting service order:', error);
+      const message = error?.response?.data?.detail
+        || error?.response?.data?.message
+        || error?.message
+        || 'حدث خطأ في تقديم الطلب. حاول مرة أخرى.';
+      setSubmitNotice(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSuccessClose = () => {
+  const closeSuccess = () => {
     onSubmitSuccess?.();
+    onClose?.();
   };
 
-  const steps = [
-    { number: 1, title: 'المعلومات الشخصية', icon: User },
-    { number: 2, title: 'رفع المستندات', icon: FileText },
-    { number: 3, title: 'المراجعة والإرسال', icon: CheckCircle },
-    { number: 4, title: 'تم الإرسال', icon: PartyPopper }
-  ];
+  const FileUploadBox = ({
+    field,
+    title,
+    hint,
+    icon: Icon,
+    acceptedTypes = ACCEPTED_DOCUMENT_TYPES,
+    required = false,
+  }) => {
+    const file = formData[field];
+    const status = uploadProgress[field];
 
-  return (
-    <div dir="rtl" lang="ar" className="min-h-screen bg-white">
-      <Header activeSection="services" onNavigate={() => {}} />
-      
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
+    return (
+      <div
+        className={`relative rounded-2xl border-2 p-4 transition-all ${
+          errors[field]
+            ? 'border-red-300 bg-red-50'
+            : file
+              ? 'border-emerald-300 bg-emerald-50'
+              : 'border-slate-200 bg-white hover:border-blue-300'
+        }`}
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-        >
-          <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between z-10">
-            <div className="flex items-center gap-4">
-              {step <= 3 ? (
-                <>
-                  <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                    <ArrowLeft className="w-6 h-6 text-slate-600" />
-                  </button>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900">طلب خدمة</h2>
-                    <p className="text-sm text-slate-500">{service.title}</p>
-                  </div>
-                </>
-              ) : (
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">تم تقديم الطلب</h2>
-                  <p className="text-sm text-slate-500">{service.title}</p>
-                </div>
-              )}
+        <input
+          ref={(el) => { fileInputRefs.current[field] = el; }}
+          type="file"
+          onChange={(event) => handleFileChange(field, event.target.files[0], acceptedTypes)}
+          className="absolute inset-0 opacity-0 cursor-pointer z-10"
+          accept={acceptedTypes.join(',')}
+        />
+
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                file ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
             </div>
-            {step <= 3 && (
-              <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                <X className="w-6 h-6 text-slate-500" />
-              </button>
-            )}
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-slate-900">{title}</p>
+              <p className={`text-xs mt-0.5 ${required ? 'text-red-500' : 'text-slate-500'}`}>
+                {required ? 'مطلوب' : hint}
+              </p>
+            </div>
           </div>
 
-          {step <= 3 && (
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-              <div className="flex items-center justify-between">
-                {steps.map((s, index) => {
-                  const Icon = s.icon;
-                  const isActive = step === s.number;
-                  const isCompleted = step > s.number;
-
-                  return (
-                    <div key={s.number} className="flex items-center flex-1">
-                      <div className={`flex items-center gap-3 ${isActive ? 'text-blue-600' : isCompleted ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                          isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' :
-                          isCompleted ? 'bg-emerald-600 text-white' : 'bg-slate-200'
-                        }`}>
-                          {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-                        </div>
-                        <span className={`text-sm font-semibold hidden md:block ${isActive ? 'text-blue-600' : ''}`}>
-                          {s.title}
-                        </span>
-                      </div>
-                      {index < steps.length - 1 && (
-                        <div className={`flex-1 h-1 mx-4 rounded ${step > s.number ? 'bg-emerald-600' : 'bg-slate-200'}`} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          {file && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                handleRemoveFile(field);
+              }}
+              className="pointer-events-auto relative z-20 p-1.5 hover:bg-red-100 rounded-lg text-red-400 hover:text-red-600 transition-colors"
+              aria-label="حذف الملف"
+            >
+              <X className="w-4 h-4" />
+            </button>
           )}
+        </div>
 
-          <div className="p-8">
-            <AnimatePresence mode="wait">
-              {step === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
+        {file ? (
+          <div className="mt-3 flex items-center gap-2 min-w-0">
+            {status === 'uploading' && <Loader className="w-4 h-4 text-blue-600 animate-spin flex-shrink-0" />}
+            {status === 'uploaded' && <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+            {status === 'error' && <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />}
+            <p className="text-xs text-slate-600 truncate">{file.name}</p>
+          </div>
+        ) : (
+          <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 pointer-events-none">
+            <Upload className="w-3.5 h-3.5" />
+            <span>اضغط للرفع أو اسحب الملف هنا</span>
+          </div>
+        )}
+
+        {errors[field] && (
+          <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            {errors[field]}
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        onClick={(event) => event.stopPropagation()}
+        className="soft-scrollbar bg-white rounded-2xl sm:rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl"
+      >
+        <div className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 p-4 sm:p-6 flex items-center justify-between gap-4 z-10">
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-blue-600 mb-1">خدماتنا</p>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate">{copy.title}</h2>
+            <p className="text-sm text-slate-500 truncate">{service?.title}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors flex-shrink-0"
+            aria-label="إغلاق"
+          >
+            <X className="w-5 h-5 text-slate-500" />
+          </button>
+        </div>
+
+        {step <= 3 && (
+          <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/70">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+              {steps.slice(0, 3).map((item) => {
+                const Icon = item.icon;
+                const isActive = step === item.number;
+                const isDone = step > item.number;
+
+                return (
+                  <div key={item.number} className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-right">
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        isDone
+                          ? 'bg-emerald-600 text-white'
+                          : isActive
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
+                            : 'bg-white border border-slate-200 text-slate-400'
+                      }`}
+                    >
+                      {isDone ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    </div>
+                    <span className={`text-xs sm:text-sm font-bold ${isActive ? 'text-blue-700' : 'text-slate-500'}`}>
+                      {item.title}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="p-4 sm:p-8">
+          <AnimatePresence mode="wait">
+            {step === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-4">
+                  <h3 className="text-base font-bold text-slate-900 mb-1">{copy.title}</h3>
+                  <p className="text-sm text-slate-600 leading-6">{copy.subtitle}</p>
+                </div>
+
+                <div>
                   <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <User className="w-5 h-5 text-blue-600" />
-                    المعلومات الشخصية
+                    المعلومات الشخصية والأكاديمية
                   </h3>
 
                   <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">الاسم الكامل *</label>
-                      <input
-                        type="text"
-                        value={formData.full_name}
-                        onChange={(e) => { setFormData({ ...formData, full_name: e.target.value }); clearFieldError('full_name'); }}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                          errors.full_name ? 'border-red-300 bg-red-50' : 'border-slate-300'
-                        }`}
-                        placeholder="الاسم الرباعي"
-                      />
-                      {errors.full_name && (
-                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.full_name}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">البريد الإلكتروني *</label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => { setFormData({ ...formData, email: e.target.value }); clearFieldError('email'); }}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                          errors.email ? 'border-red-300 bg-red-50' : 'border-slate-300'
-                        }`}
-                        placeholder="example@email.com"
-                      />
-                      {errors.email && (
-                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.email}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">رقم الهاتف *</label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); clearFieldError('phone'); }}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                          errors.phone ? 'border-red-300 bg-red-50' : 'border-slate-300'
-                        }`}
-                        placeholder="+970 5X XXX XXXX"
-                      />
-                      {errors.phone && (
-                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.phone}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">الجامعة *</label>
-                      <input
-                        type="text"
-                        value={formData.university}
-                        onChange={(e) => { setFormData({ ...formData, university: e.target.value }); clearFieldError('university'); }}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                          errors.university ? 'border-red-300 bg-red-50' : 'border-slate-300'
-                        }`}
-                        placeholder="اسم الجامعة"
-                      />
-                      {errors.university && (
-                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.university}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">التخصص *</label>
-                      <input
-                        type="text"
-                        value={formData.field_of_study}
-                        onChange={(e) => { setFormData({ ...formData, field_of_study: e.target.value }); clearFieldError('field_of_study'); }}
-                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
-                          errors.field_of_study ? 'border-red-300 bg-red-50' : 'border-slate-300'
-                        }`}
-                        placeholder="مثال: هندسة حاسوب"
-                      />
-                      {errors.field_of_study && (
-                        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.field_of_study}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">سنة التخرج</label>
-                      <input
+                    <Field
+                      label="الاسم الكامل"
+                      required
+                      value={formData.full_name}
+                      error={errors.full_name}
+                      onChange={(value) => updateField('full_name', value)}
+                      placeholder="الاسم الرباعي"
+                    />
+                    <Field
+                      label="البريد الإلكتروني"
+                      required
+                      type="email"
+                      value={formData.email}
+                      error={errors.email}
+                      onChange={(value) => updateField('email', value)}
+                      placeholder="example@email.com"
+                      dir="ltr"
+                    />
+                    <Field
+                      label="رقم الهاتف"
+                      required
+                      type="tel"
+                      value={formData.phone}
+                      error={errors.phone}
+                      onChange={(value) => updateField('phone', value)}
+                      placeholder="+970 5X XXX XXXX"
+                      dir="ltr"
+                    />
+                    <Field
+                      label="الجامعة أو المؤسسة"
+                      required
+                      value={formData.university}
+                      error={errors.university}
+                      onChange={(value) => updateField('university', value)}
+                      placeholder="اسم الجامعة"
+                    />
+                    <Field
+                      label="التخصص أو المجال"
+                      required
+                      value={formData.field_of_study}
+                      error={errors.field_of_study}
+                      onChange={(value) => updateField('field_of_study', value)}
+                      placeholder="مثال: هندسة حاسوب"
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field
+                        label="سنة التخرج"
                         type="number"
                         value={formData.graduation_year}
-                        onChange={(e) => setFormData({ ...formData, graduation_year: e.target.value })}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                        placeholder="2024"
-                        min="1990"
-                        max="2030"
+                        onChange={(value) => updateField('graduation_year', value)}
+                        placeholder="2026"
                       />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">المعدل التراكمي</label>
-                      <input
-                        type="text"
+                      <Field
+                        label="المعدل"
                         value={formData.gpa}
-                        onChange={(e) => setFormData({ ...formData, gpa: e.target.value })}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                        placeholder="مثال: 3.75/4.0"
+                        onChange={(value) => updateField('gpa', value)}
+                        placeholder="3.75/4"
                       />
                     </div>
                   </div>
-                </motion.div>
-              )}
+                </div>
+              </motion.div>
+            )}
 
-              {step === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
-                >
-                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    المستندات المطلوبة
-                  </h3>
+            {step === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  {copy.detailsTitle}
+                </h3>
 
-                  <p className="text-sm text-slate-600 bg-blue-50 p-4 rounded-xl border border-blue-200">
-                    <AlertCircle className="w-4 h-4 inline ml-2 text-blue-600" />
-                    الحد الأقصى لحجم كل ملف هو 10MB. صيغ الملفات المقبولة: PDF, JPG, PNG, DOC, DOCX
-                  </p>
+                <TextAreaField
+                  label={copy.goalLabel}
+                  required
+                  value={formData.service_goal}
+                  error={errors.service_goal}
+                  onChange={(value) => updateField('service_goal', value)}
+                  placeholder={copy.goalPlaceholder}
+                />
 
-                  {service.service_type === 'cv' && (
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className={`relative border-2 rounded-xl p-4 transition-all ${
-                        errors.old_cv ? 'border-red-300 bg-red-50' :
-                        formData.old_cv ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-blue-300'
-                      }`}>
-                        <input
-                          ref={(el) => { fileInputRefs.current.old_cv = el; }}
-                          type="file"
-                          onChange={(e) => handleFileChange('old_cv', e.target.files[0])}
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        />
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              errors.old_cv ? 'bg-red-100 text-red-600' :
-                              formData.old_cv ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'
-                            }`}>
-                              <Upload className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-slate-800">السيرة الذاتية القديمة</p>
-                              <span className="text-xs text-red-500">مطلوب *</span>
-                            </div>
-                          </div>
-                          {formData.old_cv && (
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); handleRemoveFile('old_cv'); }}
-                              className="pointer-events-auto p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-400 hover:text-red-600 z-20 relative"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                        {!formData.old_cv && (
-                          <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 pointer-events-none">
-                            <Upload className="w-3.5 h-3.5" />
-                            <span>اضغط للرفع أو اسحب الملف هنا</span>
-                          </div>
-                        )}
-                        {errors.old_cv && (
-                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            {errors.old_cv}
-                          </p>
-                        )}
-                        {formData.old_cv && (
-                          <div className="flex items-center gap-2 mt-2 pointer-events-none">
-                            {uploadProgress.old_cv === 'uploading' && <Loader className="w-4 h-4 text-blue-600 animate-spin" />}
-                            {uploadProgress.old_cv === 'uploaded' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
-                            <p className="text-xs text-slate-600 truncate">{formData.old_cv?.name}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Field
+                    label={copy.targetLabel}
+                    required={service?.service_type === 'cover_letter'}
+                    value={formData.target_name}
+                    error={errors.target_name}
+                    onChange={(value) => updateField('target_name', value)}
+                    placeholder={copy.targetPlaceholder}
+                  />
+                  <Field
+                    label="الموعد النهائي إن وجد"
+                    type="date"
+                    value={formData.deadline}
+                    onChange={(value) => updateField('deadline', value)}
+                  />
+                </div>
 
-                  {service.service_type === 'cover_letter' && (
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className={`relative border-2 rounded-xl p-4 transition-all ${
-                        errors.cv_file ? 'border-red-300 bg-red-50' :
-                        formData.cv_file ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-blue-300'
-                      }`}>
-                        <input
-                          ref={(el) => { fileInputRefs.current.cv_file = el; }}
-                          type="file"
-                          onChange={(e) => handleFileChange('cv_file', e.target.files[0])}
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        />
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              errors.cv_file ? 'bg-red-100 text-red-600' :
-                              formData.cv_file ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'
-                            }`}>
-                              <User className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-slate-800">السيرة الذاتية</p>
-                              <span className="text-xs text-red-500">مطلوب *</span>
-                            </div>
-                          </div>
-                          {formData.cv_file && (
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); handleRemoveFile('cv_file'); }}
-                              className="pointer-events-auto p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-400 hover:text-red-600 z-20 relative"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                        {!formData.cv_file && (
-                          <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 pointer-events-none">
-                            <Upload className="w-3.5 h-3.5" />
-                            <span>اضغط للرفع أو اسحب الملف هنا</span>
-                          </div>
-                        )}
-                        {errors.cv_file && (
-                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            {errors.cv_file}
-                          </p>
-                        )}
-                        {formData.cv_file && (
-                          <div className="flex items-center gap-2 mt-2 pointer-events-none">
-                            {uploadProgress.cv_file === 'uploading' && <Loader className="w-4 h-4 text-blue-600 animate-spin" />}
-                            {uploadProgress.cv_file === 'uploaded' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
-                            <p className="text-xs text-slate-600 truncate">{formData.cv_file?.name}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className={`relative border-2 rounded-xl p-4 transition-all ${
-                        errors.job_description ? 'border-red-300 bg-red-50' :
-                        formData.job_description ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-blue-300'
-                      }`}>
-                        <input
-                          ref={(el) => { fileInputRefs.current.job_description = el; }}
-                          type="file"
-                          onChange={(e) => handleFileChange('job_description', e.target.files[0])}
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        />
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                              errors.job_description ? 'bg-red-100 text-red-600' :
-                              formData.job_description ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'
-                            }`}>
-                              <BookOpen className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold text-slate-800">وصف الوظيفة/المنحة</p>
-                              <span className="text-xs text-red-500">مطلوب *</span>
-                            </div>
-                          </div>
-                          {formData.job_description && (
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); handleRemoveFile('job_description'); }}
-                              className="pointer-events-auto p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-400 hover:text-red-600 z-20 relative"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                        {!formData.job_description && (
-                          <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 pointer-events-none">
-                            <Upload className="w-3.5 h-3.5" />
-                            <span>اضغط للرفع أو اسحب الملف هنا</span>
-                          </div>
-                        )}
-                        {errors.job_description && (
-                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            {errors.job_description}
-                          </p>
-                        )}
-                        {formData.job_description && (
-                          <div className="flex items-center gap-2 mt-2 pointer-events-none">
-                            {uploadProgress.job_description === 'uploading' && <Loader className="w-4 h-4 text-blue-600 animate-spin" />}
-                            {uploadProgress.job_description === 'uploaded' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
-                            <p className="text-xs text-slate-600 truncate">{formData.job_description?.name}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
+                <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">ملاحظات إضافية (اختياري)</label>
-                    <textarea
-                      value={formData.additional_info}
-                      onChange={(e) => setFormData({ ...formData, additional_info: e.target.value })}
-                      rows={4}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      placeholder="أي معلومات إضافية تود مشاركتها..."
+                    <label className="block text-sm font-bold text-slate-700 mb-2">لغة الملف المطلوبة</label>
+                    <select
+                      value={formData.preferred_language}
+                      onChange={(event) => updateField('preferred_language', event.target.value)}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white"
+                    >
+                      <option value="العربية">العربية</option>
+                      <option value="الإنجليزية">الإنجليزية</option>
+                      <option value="العربية والإنجليزية">العربية والإنجليزية</option>
+                    </select>
+                  </div>
+                  <FileUploadBox
+                    field="optional_document"
+                    title={copy.optionalFileTitle}
+                    hint={copy.optionalFileHint}
+                    icon={BookOpen}
+                  />
+                </div>
+
+                <TextAreaField
+                  label="ملاحظات إضافية"
+                  value={formData.additional_info}
+                  onChange={(value) => updateField('additional_info', value)}
+                  placeholder="أي تفاصيل إضافية، إنجازات مهمة، روابط، أو تعليمات خاصة..."
+                  rows={3}
+                />
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
+                  المراجعة والدفع
+                </h3>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5">
+                    <h4 className="text-sm font-bold text-slate-900 mb-4">ملخص الطلب</h4>
+                    <ReviewRow label="الخدمة" value={service?.title} />
+                    <ReviewRow label="الاسم" value={formData.full_name} />
+                    <ReviewRow label="البريد" value={formData.email} />
+                    <ReviewRow label="الهاتف" value={formData.phone} />
+                    <ReviewRow label="الهدف" value={formData.target_name || 'غير محدد'} />
+                    <ReviewRow label="اللغة" value={formData.preferred_language} />
+                  </div>
+
+                  <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5">
+                    <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-blue-600" />
+                      بيانات الدفع
+                    </h4>
+                    <p className="text-sm text-slate-600 leading-6 mb-4">
+                      يمكنك رفع إيصال الدفع الآن أو إرسال الطلب وسيتم التواصل معك لإكمال الدفع.
+                    </p>
+                    <Field
+                      label="رقم العملية إن وجد"
+                      value={formData.transaction_id}
+                      onChange={(value) => updateField('transaction_id', value)}
+                      placeholder="Transaction ID"
+                      dir="ltr"
                     />
                   </div>
-                </motion.div>
-              )}
+                </div>
 
-              {step === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                <FileUploadBox
+                  field="payment_receipt"
+                  title="إيصال الدفع"
+                  hint="اختياري الآن، صيغة JPG أو PNG"
+                  icon={Upload}
+                  acceptedTypes={ACCEPTED_RECEIPT_TYPES}
+                />
+
+                {submitNotice && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-700">{submitNotice}</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {step === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10 space-y-6"
+              >
+                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+                  <PartyPopper className="w-10 h-10 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">تم تقديم طلبك بنجاح</h3>
+                  <p className="text-slate-600 leading-7 max-w-lg mx-auto">
+                    وصلنا طلب الخدمة، وسيتم التواصل معك عبر البريد الإلكتروني أو الهاتف لمتابعة التفاصيل.
+                  </p>
+                </div>
+
+                {submitNotice && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 max-w-md mx-auto">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-amber-700 text-right">{submitNotice}</p>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={closeSuccess}
+                  className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
                 >
-                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-blue-600" />
-                    مراجعة الطلب قبل الإرسال
-                  </h3>
+                  العودة
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-                  <div className="bg-slate-50 rounded-xl p-6 space-y-4">
-                    <h4 className="text-sm font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">المعلومات الشخصية</h4>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-slate-500 mb-1">الاسم الكامل</p>
-                        <p className="text-sm font-semibold text-slate-800">{formData.full_name}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500 mb-1">البريد الإلكتروني</p>
-                        <p className="text-sm font-semibold text-slate-800">{formData.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500 mb-1">رقم الهاتف</p>
-                        <p className="text-sm font-semibold text-slate-800">{formData.phone}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500 mb-1">الجامعة</p>
-                        <p className="text-sm font-semibold text-slate-800">{formData.university}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500 mb-1">التخصص</p>
-                        <p className="text-sm font-semibold text-slate-800">{formData.field_of_study}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-500 mb-1">سنة التخرج</p>
-                        <p className="text-sm font-semibold text-slate-800">{formData.graduation_year || '—'}</p>
-                      </div>
-                    </div>
-                  </div>
+        {step <= 3 && (
+          <div className="sticky bottom-0 bg-white border-t border-slate-200 p-4 sm:p-6 flex items-center justify-between gap-3">
+            {step > 1 ? (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="px-5 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors"
+              >
+                السابق
+              </button>
+            ) : (
+              <div />
+            )}
 
-                  <div className="bg-slate-50 rounded-xl p-6 space-y-4">
-                    <h4 className="text-sm font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">الملفات المرفقة</h4>
-                    {service.service_type === 'cv' && formData.old_cv && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                        <span className="text-slate-800 font-medium">السيرة الذاتية القديمة</span>
-                        <span className="text-slate-500 text-xs truncate">({formData.old_cv.name})</span>
-                      </div>
-                    )}
-                    {service.service_type === 'cover_letter' && (
-                      <>
-                        {formData.cv_file && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                            <span className="text-slate-800 font-medium">السيرة الذاتية</span>
-                            <span className="text-slate-500 text-xs truncate">({formData.cv_file.name})</span>
-                          </div>
-                        )}
-                        {formData.job_description && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                            <span className="text-slate-800 font-medium">وصف الوظيفة/المنحة</span>
-                            <span className="text-slate-500 text-xs truncate">({formData.job_description.name})</span>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-
-                  {submitError && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-700">{submitError}</p>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {step === 4 && (
-                <motion.div
-                  key="step4"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-10 space-y-6"
-                >
-                  <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
-                    <PartyPopper className="w-10 h-10 text-emerald-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">تم تقديم طلبك بنجاح!</h3>
-                    <p className="text-slate-600">سيتم التواصل معك عبر البريد الإلكتروني أو الهاتف لمتابعة الإجراءات التالية.</p>
-                  </div>
-
-                  {submitError && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 max-w-md mx-auto">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-amber-700 text-right">{submitError}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleSuccessClose}
-                    className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30"
-                  >
-                    العودة
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {step < 3 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="flex-1 max-w-xs py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                التالي
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="flex-1 max-w-xs py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    جاري الإرسال...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    تقديم الطلب
+                  </>
+                )}
+              </button>
+            )}
           </div>
-
-          {step <= 3 && (
-            <div className="sticky bottom-0 bg-white border-t border-slate-200 p-6 flex items-center justify-between gap-4">
-              {step > 1 ? (
-                <button
-                  onClick={handleBack}
-                  className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all"
-                >
-                  السابق
-                </button>
-              ) : (
-                <div />
-              )}
-
-              {step < 3 ? (
-                <button
-                  onClick={handleNext}
-                  className="flex-1 max-w-xs py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
-                >
-                  <span>التالي</span>
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="flex-1 max-w-xs py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl font-bold hover:from-emerald-700 hover:to-emerald-800 transition-all shadow-lg shadow-emerald-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <Loader className="w-5 h-5 animate-spin" />
-                      <span>جاري الإرسال...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-5 h-5" />
-                      <span>تقديم الطلب</span>
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          )}
-        </motion.div>
+        )}
       </motion.div>
+    </motion.div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  error,
+  required = false,
+  type = 'text',
+  placeholder = '',
+  dir,
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-slate-700 mb-2">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${
+          error ? 'border-red-300 bg-red-50' : 'border-slate-300 bg-white'
+        }`}
+        placeholder={placeholder}
+        dir={dir}
+      />
+      {error && (
+        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function TextAreaField({
+  label,
+  value,
+  onChange,
+  error,
+  required = false,
+  placeholder = '',
+  rows = 4,
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-slate-700 mb-2">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        rows={rows}
+        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none ${
+          error ? 'border-red-300 bg-red-50' : 'border-slate-300 bg-white'
+        }`}
+        placeholder={placeholder}
+      />
+      {error && (
+        <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ReviewRow({ label, value }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2 border-b border-slate-200 last:border-b-0">
+      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-sm font-semibold text-slate-800 text-left break-words">{value || '-'}</span>
     </div>
   );
 }

@@ -91,7 +91,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
 
   const validateStep2 = () => {
     const newErrors = {};
-    if (!formData.education_level) newErrors.education_level = 'المستوى التعليمي مطلوب';
+    if (!formData.education_level) newErrors.education_level = 'المستوى التعليمي الحالي مطلوب';
     if (!formData.gpa) newErrors.gpa = 'المعدل التراكمي مطلوب';
     if (!formData.field_of_study.trim()) newErrors.field_of_study = 'التخصص مطلوب';
 
@@ -211,6 +211,9 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
       const response = await applicationsAPI.create(applicationData);
       console.log('Application created:', response.data);
       const applicationId = response.data.id;
+      if (!applicationId) {
+        throw new Error('لم يتم استلام رقم الطلب من الخادم. يرجى المحاولة مرة أخرى.');
+      }
 
       // Then upload all documents
       const documents = [
@@ -252,7 +255,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
 
       if (uploadErrors.length > 0) {
         setSubmitError('تم إنشاء الطلب لكن حدث خطأ في رفع بعض المستندات. يمكنك إعادة رفعها لاحقاً.');
-        setStep(5);
+        setStep(6);
         return;
       }
 
@@ -263,7 +266,11 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
         console.log('Submit endpoint not available, application created but not submitted');
       }
 
-      setStep(5);
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      } else {
+        setStep(6);
+      }
     } catch (error) {
       console.error('Error submitting application:', error);
       console.error('Error response:', error?.response?.data);
@@ -528,7 +535,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      المستوى التعليمي *
+                      المستوى التعليمي الحالي *
                     </label>
                     <select
                       value={formData.education_level}
@@ -887,7 +894,7 @@ function ApplicationForm({ scholarship, onClose, onSubmitSuccess }) {
                   <h4 className="text-sm font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">المعلومات الأكاديمية</h4>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-slate-500 mb-1">المستوى التعليمي</p>
+                      <p className="text-xs text-slate-500 mb-1">المستوى التعليمي الحالي</p>
                       <p className="text-sm font-semibold text-slate-800">{educationLevelLabels[formData.education_level] || formData.education_level}</p>
                     </div>
                     <div>

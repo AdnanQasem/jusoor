@@ -31,6 +31,7 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = [
+            'id',
             'scholarship',
             'full_name', 'email', 'phone', 'date_of_birth', 'nationality', 'gender',
             'education_level', 'gpa', 'university', 'graduation_year', 'field_of_study',
@@ -38,6 +39,7 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
             'cover_letter', 'personal_statement',
             'cv', 'transcripts', 'recommendation_letters'
         ]
+        read_only_fields = ['id']
 
     def create(self, validated_data):
         validated_data['status'] = 'draft'

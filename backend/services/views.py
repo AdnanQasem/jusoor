@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.core.files.storage import default_storage
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Service, ServiceOrder
 from .serializers import ServiceSerializer, ServiceOrderSerializer, ServiceOrderCreateSerializer
@@ -17,13 +18,19 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
 class ServiceOrderViewSet(viewsets.ModelViewSet):
     """ViewSet for managing service orders"""
     serializer_class = ServiceOrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status']
     ordering_fields = ['-created_at']
     ordering = ['-created_at']
+
+    def get_permissions(self):
+        if self.action in ['create', 'upload_receipt', 'upload_document', 'submit']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
     
     def get_queryset(self):
+        if self.action in ['upload_receipt', 'upload_document', 'submit']:
+            return ServiceOrder.objects.all()
         return ServiceOrder.objects.filter(user=self.request.user)
     
     def get_serializer_class(self):
@@ -32,7 +39,48 @@ class ServiceOrderViewSet(viewsets.ModelViewSet):
         return ServiceOrderSerializer
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, status='pending')
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user, status='pending')
+        else:
+            serializer.save(status='pending')
+
+    @action(detail=True, methods=['post'])
+    def submit(self, request, pk=None):
+        """Submit service order for review"""
+        order = self.get_object()
+        if order.status == 'pending':
+            order.save()
+        return Response({'message': 'تم تقديم طلب الخدمة بنجاح', 'status': order.status})
+
+    @action(detail=True, methods=['post'])
+    def upload_document(self, request, pk=None):
+        """Upload service-related document"""
+        order = self.get_object()
+
+        if 'document' not in request.FILES:
+            return Response(
+                {'error': 'No document file provided'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        doc_type = request.data.get('type', 'other')
+        doc_file = request.FILES['document']
+        saved_path = default_storage.save(
+            f'service_orders/{order.id}/{doc_type}/{doc_file.name}',
+            doc_file,
+        )
+
+        documents = order.service_documents or []
+        documents.append({
+            'type': doc_type,
+            'name': doc_file.name,
+            'url': default_storage.url(saved_path),
+            'path': saved_path,
+        })
+        order.service_documents = documents
+        order.save()
+
+        return Response({'message': 'تم رفع المستند بنجاح'})
     
     @action(detail=True, methods=['post'])
     def upload_receipt(self, request, pk=None):

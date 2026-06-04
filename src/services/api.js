@@ -5,9 +5,6 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
   timeout: 10000, // 10 seconds timeout
 });
 
@@ -18,6 +15,16 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      if (typeof config.headers?.delete === 'function') {
+        config.headers.delete('Content-Type');
+      } else if (config.headers) {
+        delete config.headers['Content-Type'];
+        delete config.headers['content-type'];
+      }
+    }
+
     return config;
   },
   (error) => {
@@ -102,12 +109,17 @@ export const serviceOrdersAPI = {
   create: (data) => api.post('/service-orders/', data),
   getAll: (params) => api.get('/service-orders/', { params }),
   getById: (id) => api.get(`/service-orders/${id}/`),
+  submit: (id) => api.post(`/service-orders/${id}/submit/`),
+  uploadDocument: (id, file, type) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    formData.append('type', type);
+    return api.post(`/service-orders/${id}/upload_document/`, formData);
+  },
   uploadReceipt: (id, file) => {
     const formData = new FormData();
     formData.append('receipt', file);
-    return api.post(`/service-orders/${id}/upload_receipt/`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post(`/service-orders/${id}/upload_receipt/`, formData);
   },
 };
 
@@ -121,16 +133,12 @@ export const applicationsAPI = {
     const formData = new FormData();
     formData.append('document', file);
     formData.append('type', type);
-    return api.post(`/applications/${id}/upload_document/`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post(`/applications/${id}/upload_document/`, formData);
   },
   uploadReceipt: (id, file) => {
     const formData = new FormData();
     formData.append('receipt', file);
-    return api.post(`/applications/${id}/upload_receipt/`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post(`/applications/${id}/upload_receipt/`, formData);
   },
 };
 

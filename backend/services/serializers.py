@@ -27,7 +27,9 @@ class ServiceOrderSerializer(serializers.ModelSerializer):
         model = ServiceOrder
         fields = [
             'id', 'service', 'service_name', 'service_name_en', 'price',
-            'status', 'status_display', 'notes', 'payment_method',
+            'status', 'status_display', 'notes', 'full_name', 'email', 'phone',
+            'university', 'field_of_study', 'graduation_year', 'gpa',
+            'service_details', 'service_documents', 'payment_method',
             'transaction_id', 'payment_receipt', 'paid_amount',
             'delivered_files', 'delivered_at', 'created_at', 'updated_at'
         ]
@@ -43,4 +45,13 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ServiceOrder
-        fields = ['service', 'notes', 'payment_method', 'transaction_id']
+        fields = [
+            'id', 'service', 'notes', 'full_name', 'email', 'phone',
+            'university', 'field_of_study', 'graduation_year', 'gpa',
+            'service_details', 'payment_method', 'transaction_id'
+        ]
+        read_only_fields = ['id']
+
+    def create(self, validated_data):
+        validated_data['paid_amount'] = validated_data['service'].price
+        return super().create(validated_data)

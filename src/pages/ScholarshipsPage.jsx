@@ -406,7 +406,7 @@ function ScholarshipsPage({ onNavigate }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {filteredScholarships.map((scholarship, index) => {
               const daysLeft = getDaysLeft(scholarship.deadline);
-              const isExpired = daysLeft <= 0;
+              const isExpired = scholarship.is_expired === true || daysLeft <= 0;
               const urgency = getUrgencyStyle(daysLeft);
               const typeLabel = scholarship.scholarship_type_display || SCHOLARSHIP_TYPE_LABELS[scholarship.scholarship_type] || scholarship.scholarship_type;
               const fundingLabel = scholarship.funding_type_display || FUNDING_TYPE_LABELS[scholarship.funding_type] || scholarship.funding_type;
@@ -513,7 +513,7 @@ function ScholarshipsPage({ onNavigate }) {
                       }`}
                       disabled={isExpired}
                     >
-                      {isExpired ? 'انتهى التقديم' : (
+                      {isExpired ? 'المنحة انتهت - انتظر الدورة القادمة' : (
                         <>
                           <span>تفاصيل المنحة</span>
                           <ArrowLeft className="w-4 h-4" />
@@ -564,6 +564,10 @@ function ScholarshipsPage({ onNavigate }) {
           <ScholarshipDetailModal
             scholarship={selectedScholarship}
             onClose={() => setSelectedScholarship(null)}
+            onSubmitSuccess={() => {
+              setSelectedScholarship(null);
+              onNavigate?.('home');
+            }}
           />
         )}
       </AnimatePresence>
@@ -577,7 +581,7 @@ function ScholarshipsPage({ onNavigate }) {
             onSubmitSuccess={() => {
               setShowApplicationForm(false);
               setSelectedScholarship(null);
-              alert('تم تقديم طلبك بنجاح! سنتواصل معك قريباً.');
+              onNavigate?.('home');
             }}
           />
         )}
