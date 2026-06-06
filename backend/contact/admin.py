@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import ContactMessage, FAQ
+from .models import ContactMessage, FAQ, ContactSettings
 
 
 @admin.register(ContactMessage)
@@ -48,3 +48,37 @@ class FAQAdmin(admin.ModelAdmin):
     list_filter = ['category', 'is_active']
     search_fields = ['question', 'answer']
     ordering = ['category', 'order']
+
+
+@admin.register(ContactSettings)
+class ContactSettingsAdmin(admin.ModelAdmin):
+    list_display = ['email', 'phone', 'facebook_url', 'instagram_url', 'updated_at']
+    readonly_fields = ['updated_at']
+
+    fieldsets = (
+        (_('Email'), {
+            'fields': ('email',)
+        }),
+        (_('Phone'), {
+            'fields': ('phone',)
+        }),
+        (_('Social Media'), {
+            'fields': (
+                'facebook_url',
+                'twitter_url',
+                'instagram_url',
+                'linkedin_url',
+                'whatsapp_url',
+            )
+        }),
+        (_('Timestamps'), {
+            'fields': ('updated_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def has_add_permission(self, request):
+        return not ContactSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -2,13 +2,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from scholarships.views import ScholarshipViewSet, FAQViewSet as ScholarshipFAQViewSet
 from services.views import ServiceViewSet, ServiceOrderViewSet
 from applications.views import ApplicationViewSet
-from contact.views import ContactMessageViewSet, FAQViewSet as ContactFAQViewSet
+from contact.views import ContactMessageViewSet, FAQViewSet as ContactFAQViewSet, ContactSettingsViewSet
 
 router = DefaultRouter()
 router.register(r'scholarships', ScholarshipViewSet, basename='scholarship')
@@ -17,9 +18,13 @@ router.register(r'service-orders', ServiceOrderViewSet, basename='service-order'
 router.register(r'applications', ApplicationViewSet, basename='application')
 router.register(r'contact', ContactMessageViewSet, basename='contact')
 router.register(r'contact-faq', ContactFAQViewSet, basename='contact-faq')
+router.register(r'contact-settings', ContactSettingsViewSet, basename='contact-settings')
 router.register(r'scholarship-faq', ScholarshipFAQViewSet, basename='scholarship-faq')
 
 urlpatterns = [
+    # Root
+    path('', RedirectView.as_view(url='/api/docs/', permanent=False), name='home'),
+
     # Admin
     path('admin/', admin.site.urls),
     

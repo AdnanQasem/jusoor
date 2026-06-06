@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ContactMessage, FAQ
+from .models import ContactMessage, FAQ, ContactSettings
 
 
 class ContactMessageSerializer(serializers.ModelSerializer):
@@ -31,3 +31,15 @@ class FAQSerializer(serializers.ModelSerializer):
         fields = ['id', 'category', 'question', 'answer', 'order', 'is_active']
         read_only_fields = ['id', 'created_at', 'updated_at']
         ref_name = 'ContactFAQ'
+
+
+class ContactSettingsSerializer(serializers.ModelSerializer):
+    """Serializer for public contact settings."""
+
+    class Meta:
+        model = ContactSettings
+        fields = [
+            'email', 'phone', 'facebook_url', 'twitter_url',
+            'instagram_url', 'linkedin_url', 'whatsapp_url', 'updated_at'
+        ]
+        read_only_fields = ['updated_at']

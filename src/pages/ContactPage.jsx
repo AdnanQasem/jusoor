@@ -4,9 +4,19 @@ import { contactAPI } from '../services/api';
 import {
   Mail, Phone, MapPin, MessageCircle, Send, Clock,
   Facebook, Twitter, Instagram, Linkedin, Globe,
-  CheckCircle, AlertCircle, Loader, X
+  CheckCircle, AlertCircle, Loader
 } from 'lucide-react';
 import Header from '../components/Header';
+
+const DEFAULT_CONTACT_SETTINGS = {
+  email: 'info@amdist.ps',
+  phone: '+970 59 999 9999',
+  facebook_url: '',
+  twitter_url: '',
+  instagram_url: '',
+  linkedin_url: '',
+  whatsapp_url: ''
+};
 
 function ContactPage({ onNavigate }) {
   const [formData, setFormData] = useState({
@@ -21,9 +31,11 @@ function ContactPage({ onNavigate }) {
   const [error, setError] = useState('');
   const [faqs, setFaqs] = useState([]);
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [contactSettings, setContactSettings] = useState(DEFAULT_CONTACT_SETTINGS);
 
   useEffect(() => {
     loadFaqs();
+    loadContactSettings();
   }, []);
 
   const loadFaqs = async () => {
@@ -32,6 +44,18 @@ function ContactPage({ onNavigate }) {
       setFaqs(response.data?.results || response.data || []);
     } catch (error) {
       console.error('Error loading FAQs:', error);
+    }
+  };
+
+  const loadContactSettings = async () => {
+    try {
+      const response = await contactAPI.getSettings();
+      setContactSettings({
+        ...DEFAULT_CONTACT_SETTINGS,
+        ...(response.data || {})
+      });
+    } catch (error) {
+      console.error('Error loading contact settings:', error);
     }
   };
 
@@ -92,13 +116,13 @@ function ContactPage({ onNavigate }) {
     {
       icon: Mail,
       title: 'البريد الإلكتروني',
-      value: 'info@amdist.ps',
+      value: contactSettings.email || DEFAULT_CONTACT_SETTINGS.email,
       color: 'blue'
     },
     {
       icon: Phone,
       title: 'رقم الهاتف',
-      value: '+970 59 999 9999',
+      value: contactSettings.phone || DEFAULT_CONTACT_SETTINGS.phone,
       color: 'green'
     },
     {
@@ -114,6 +138,39 @@ function ContactPage({ onNavigate }) {
       color: 'purple'
     }
   ];
+
+  const socialLinks = [
+    {
+      name: 'Facebook',
+      href: contactSettings.facebook_url,
+      icon: Facebook,
+      className: 'bg-blue-600 hover:bg-blue-700'
+    },
+    {
+      name: 'Twitter',
+      href: contactSettings.twitter_url,
+      icon: Twitter,
+      className: 'bg-sky-500 hover:bg-sky-600'
+    },
+    {
+      name: 'Instagram',
+      href: contactSettings.instagram_url,
+      icon: Instagram,
+      className: 'bg-pink-600 hover:bg-pink-700'
+    },
+    {
+      name: 'LinkedIn',
+      href: contactSettings.linkedin_url,
+      icon: Linkedin,
+      className: 'bg-blue-700 hover:bg-blue-800'
+    },
+    {
+      name: 'WhatsApp',
+      href: contactSettings.whatsapp_url,
+      icon: MessageCircle,
+      className: 'bg-green-600 hover:bg-green-700'
+    }
+  ].filter((social) => social.href);
 
   return (
     <div dir="rtl" lang="ar" className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -350,20 +407,26 @@ function ContactPage({ onNavigate }) {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 mb-1">التواصل الاجتماعي</h4>
-                      <div className="flex gap-3 mt-2">
-                        <a href="#" className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center hover:bg-blue-700 transition-colors">
-                          <Facebook className="w-4 h-4 text-white" />
-                        </a>
-                        <a href="#" className="w-9 h-9 rounded-lg bg-sky-500 flex items-center justify-center hover:bg-sky-600 transition-colors">
-                          <Twitter className="w-4 h-4 text-white" />
-                        </a>
-                        <a href="#" className="w-9 h-9 rounded-lg bg-pink-600 flex items-center justify-center hover:bg-pink-700 transition-colors">
-                          <Instagram className="w-4 h-4 text-white" />
-                        </a>
-                        <a href="#" className="w-9 h-9 rounded-lg bg-blue-700 flex items-center justify-center hover:bg-blue-800 transition-colors">
-                          <Linkedin className="w-4 h-4 text-white" />
-                        </a>
-                      </div>
+                      {socialLinks.length > 0 && (
+                        <div className="flex gap-3 mt-2">
+                          {socialLinks.map((social) => {
+                            const Icon = social.icon;
+                            return (
+                              <a
+                                key={social.name}
+                                href={social.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={social.name}
+                                title={social.name}
+                                className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${social.className}`}
+                              >
+                                <Icon className="w-4 h-4 text-white" />
+                              </a>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

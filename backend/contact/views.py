@@ -2,8 +2,13 @@ from rest_framework import viewsets, permissions, filters
 from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import ContactMessage, FAQ
-from .serializers import ContactMessageSerializer, ContactMessageCreateSerializer, FAQSerializer
+from .models import ContactMessage, FAQ, ContactSettings
+from .serializers import (
+    ContactMessageSerializer,
+    ContactMessageCreateSerializer,
+    FAQSerializer,
+    ContactSettingsSerializer,
+)
 
 
 class ContactMessageViewSet(viewsets.ModelViewSet):
@@ -42,3 +47,13 @@ class FAQViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['category']
     search_fields = ['question', 'answer']
+
+
+class ContactSettingsViewSet(viewsets.ViewSet):
+    """Public endpoint for admin-managed contact page details."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def list(self, request):
+        serializer = ContactSettingsSerializer(ContactSettings.load())
+        return Response(serializer.data)

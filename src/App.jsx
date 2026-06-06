@@ -2226,14 +2226,6 @@ function Footer({ onNavigate }) {
     { label: 'تواصل معنا', target: 'contact' },
   ];
 
-  const services = [
-    'التقديم الشامل',
-    'السيرة الذاتية',
-    'رسالة التحفيز',
-    'الترجمة',
-    'المتابعة',
-  ];
-
   const contactLinks = [
     { label: '+972 59 228 6907', href: 'tel:+972592286907', icon: Phone, dir: 'ltr' },
     { label: 'info@amdist.ps', href: 'mailto:info@amdist.ps', icon: Mail, dir: 'ltr' },
@@ -2250,16 +2242,16 @@ function Footer({ onNavigate }) {
     <footer className="bg-slate-950 text-slate-300">
       <div className="border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
-            <div>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
               <p className="text-sm font-semibold text-blue-300 mb-2">جاهز تبدأ؟</p>
               <h2 className="text-2xl sm:text-3xl font-bold text-white">اختصر طريقك للمنحة المناسبة</h2>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="button"
                 onClick={() => onNavigate?.('scholarships')}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 transition-colors"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition-colors hover:bg-blue-500"
               >
                 استعرض المنح
                 <ArrowLeft className="w-4 h-4" />
@@ -2267,7 +2259,7 @@ function Footer({ onNavigate }) {
               <button
                 type="button"
                 onClick={() => onNavigate?.('contact')}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white/5 text-white border border-white/10 rounded-xl font-semibold hover:bg-white/10 transition-colors"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition-colors hover:bg-white/10"
               >
                 تواصل معنا
                 <MessageCircle className="w-4 h-4" />
@@ -2278,10 +2270,10 @@ function Footer({ onNavigate }) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.35fr_0.95fr_0.9fr]">
           <div>
             <div className="flex items-center gap-3 mb-5">
-              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden">
+              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white">
                 <img src={logoImage} alt="جسور" className="h-9 w-auto" />
               </div>
               <div>
@@ -2290,11 +2282,11 @@ function Footer({ onNavigate }) {
               </div>
             </div>
 
-            <p className="text-sm leading-7 text-slate-400 max-w-sm">
+            <p className="max-w-sm text-sm leading-7 text-slate-400">
               نساعد الطلاب على اكتشاف المنح المناسبة وتجهيز ملفات تقديم مرتبة وواضحة، من البحث حتى إرسال الطلب.
             </p>
 
-            <div className="flex gap-2.5 mt-6">
+            <div className="mt-6 flex gap-2.5">
               {socialLinks.map((social) => {
                 const Icon = social.icon;
                 return (
@@ -2303,11 +2295,11 @@ function Footer({ onNavigate }) {
                     href={social.href}
                     target={social.href.startsWith('http') ? '_blank' : undefined}
                     rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-500 hover:bg-blue-600 transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-400 transition-colors hover:border-blue-500 hover:bg-blue-600 hover:text-white"
                     aria-label={social.name}
                     title={social.name}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="h-4 w-4" />
                   </a>
                 );
               })}
@@ -2315,14 +2307,14 @@ function Footer({ onNavigate }) {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-white mb-4">روابط سريعة</h3>
-            <ul className="space-y-3">
+            <h3 className="mb-4 text-sm font-bold text-white">روابط سريعة</h3>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {quickLinks.map((link) => (
                 <li key={link.target}>
                   <button
                     type="button"
                     onClick={() => onNavigate?.(link.target)}
-                    className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
+                    className="text-sm text-slate-400 transition-colors hover:text-blue-300"
                   >
                     {link.label}
                   </button>
@@ -2332,67 +2324,37 @@ function Footer({ onNavigate }) {
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-white mb-4">الخدمات</h3>
-            <ul className="space-y-3">
-              {services.map((service) => (
-                <li key={service}>
-                  <button
-                    type="button"
-                    onClick={() => onNavigate?.('services')}
-                    className="text-sm text-slate-400 hover:text-blue-300 transition-colors"
-                  >
-                    {service}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-white mb-4">معلومات التواصل</h3>
+            <h3 className="mb-4 text-sm font-bold text-white">معلومات التواصل</h3>
             <ul className="space-y-3">
               {contactLinks.map((item) => {
                 const Icon = item.icon;
                 const content = (
                   <>
-                    <Icon className="w-4 h-4 text-blue-300 flex-shrink-0" />
+                    <Icon className="w-4 h-4 flex-shrink-0 text-blue-300" />
                     <span dir={item.dir} className="text-sm">{item.label}</span>
                   </>
                 );
 
                 return (
-                  <li key={item.label} className="flex items-center gap-3 text-slate-400">
+                  <li key={item.label} className="text-slate-400">
                     {item.href ? (
-                      <a href={item.href} className="flex items-center gap-3 hover:text-white transition-colors">
+                      <a href={item.href} className="flex items-center gap-3 transition-colors hover:text-white">
                         {content}
                       </a>
                     ) : (
-                      content
+                      <div className="flex items-center gap-3">{content}</div>
                     )}
                   </li>
                 );
               })}
             </ul>
-
-            <button
-              type="button"
-              onClick={() => onNavigate?.('contact')}
-              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-blue-300 hover:text-blue-200 transition-colors"
-            >
-              افتح صفحة التواصل
-              <ArrowLeft className="w-4 h-4" />
-            </button>
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-10 pt-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-right">
-            <p className="text-xs text-slate-500">
-              جميع الحقوق محفوظة © {currentYear} جسور.
-            </p>
-            <p className="text-xs text-slate-500">
-              صمم لدعم الطلاب في الوصول إلى فرص تعليمية أفضل.
-            </p>
+        <div className="mt-10 border-t border-slate-800 pt-6">
+          <div className="flex flex-col items-center justify-between gap-3 text-center md:flex-row md:text-right">
+            <p className="text-xs text-slate-500">جميع الحقوق محفوظة © {currentYear} جسور.</p>
+            <p className="text-xs text-slate-500">تصميم مختصر يساعد الطالب على الوصول بسرعة إلى المعلومات المهمة.</p>
           </div>
         </div>
       </div>
@@ -2400,7 +2362,6 @@ function Footer({ onNavigate }) {
   );
 }
 
-// ==========================================
 // MAIN APP
 // ==========================================
 

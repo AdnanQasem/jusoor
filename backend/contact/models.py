@@ -66,3 +66,32 @@ class FAQ(models.Model):
     
     def __str__(self):
         return self.question
+
+
+class ContactSettings(models.Model):
+    """Admin-managed contact details displayed on the public contact page."""
+
+    email = models.EmailField(_('Email'), default='info@amdist.ps')
+    phone = models.CharField(_('Phone'), max_length=50, blank=True, default='+970 59 999 9999')
+    facebook_url = models.URLField(_('Facebook URL'), blank=True)
+    twitter_url = models.URLField(_('Twitter URL'), blank=True)
+    instagram_url = models.URLField(_('Instagram URL'), blank=True)
+    linkedin_url = models.URLField(_('LinkedIn URL'), blank=True)
+    whatsapp_url = models.URLField(_('WhatsApp URL'), blank=True)
+    updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Contact Settings')
+        verbose_name_plural = _('Contact Settings')
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return str(_('Contact Settings'))

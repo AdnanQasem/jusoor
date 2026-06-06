@@ -146,6 +146,7 @@ export const applicationsAPI = {
 export const contactAPI = {
   sendMessage: (data) => api.post('/contact/', data),
   getFAQ: (params) => api.get('/contact-faq/', { params }),
+  getSettings: () => api.get('/contact-settings/'),
 };
 
 // Scholarship FAQ API
