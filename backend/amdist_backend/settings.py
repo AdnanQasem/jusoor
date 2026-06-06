@@ -86,7 +86,7 @@ FRONTEND_ORIGINS = unique_values(
         "https://jusoor-one.vercel.app",
         origin_config("FRONTEND_URL"),
     ]
-)
+)   
 
 ALLOWED_HOSTS = unique_values(
     csv_config("ALLOWED_HOSTS"),
