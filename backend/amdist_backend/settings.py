@@ -7,17 +7,24 @@ from pathlib import Path
 from urllib.parse import urlparse
 from decouple import config
 from datetime import timedelta
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-this-in-production")
+SECRET_KEY = config("SECRET_KEY", default="")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default=True, cast=bool)
+DEBUG = config("DEBUG", default=False, cast=bool)
+
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-change-this-in-development-only"
+    else:
+        raise ImproperlyConfigured("SECRET_KEY must be set when DEBUG=False.")
 
 
 def csv_config(name, default=""):
@@ -36,6 +43,20 @@ def hostname_config(name):
     return parsed.hostname or value
 
 
+def origin_from_value(value):
+    value = (value or "").strip().rstrip("/")
+    if not value:
+        return ""
+    parsed = urlparse(value if "://" in value else f"https://{value}")
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}"
+    return value
+
+
+def origin_config(name):
+    return origin_from_value(config(name, default=""))
+
+
 def unique_values(*groups):
     values = []
     for group in groups:
@@ -45,20 +66,42 @@ def unique_values(*groups):
     return values
 
 
-# Railway: set this in Variables
-# Example:
-# ALLOWED_HOSTS=localhost,127.0.0.1,YOUR-BACKEND.up.railway.app
-ALLOWED_HOSTS = unique_values(
-    csv_config(
-        "ALLOWED_HOSTS",
-        default="localhost,127.0.0.1",
-    ),
+LOCAL_ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+LOCAL_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+]
+PRODUCTION_HOSTS = unique_values(
     [
-        "railway-adnan-production.up.railway.app",
         "jusoor-production.up.railway.app",
+        "railway-adnan-production.up.railway.app",
         hostname_config("RAILWAY_PUBLIC_DOMAIN"),
-    ],
+    ]
 )
+PRODUCTION_ORIGINS = [origin_from_value(host) for host in PRODUCTION_HOSTS]
+FRONTEND_ORIGINS = unique_values(
+    [
+        "https://jusoor-one.vercel.app",
+        origin_config("FRONTEND_URL"),
+    ]
+)
+
+ALLOWED_HOSTS = unique_values(
+    csv_config("ALLOWED_HOSTS"),
+    LOCAL_ALLOWED_HOSTS if DEBUG else [],
+    PRODUCTION_HOSTS,
+)
+
+USE_X_FORWARDED_HOST = config("USE_X_FORWARDED_HOST", default=False, cast=bool)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=not DEBUG, cast=bool)
+SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=not DEBUG, cast=bool)
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
+SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=0 if DEBUG else 31536000, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=not DEBUG, cast=bool)
+SECURE_HSTS_PRELOAD = config("SECURE_HSTS_PRELOAD", default=not DEBUG, cast=bool)
 
 
 # Application definition
@@ -129,13 +172,31 @@ WSGI_APPLICATION = "amdist_backend.wsgi.application"
 
 
 # Database
-# SQLite is okay for testing, but PostgreSQL is better for production on Railway.
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Railway PostgreSQL exposes DATABASE_URL. SQLite remains the local fallback.
+DATABASE_URL = config("DATABASE_URL", default="")
+if DATABASE_URL:
+    try:
+        import dj_database_url
+    except ImportError as exc:
+        raise ImproperlyConfigured(
+            "dj-database-url must be installed when DATABASE_URL is set."
+        ) from exc
+
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=not DEBUG,
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -206,25 +267,23 @@ REST_FRAMEWORK = {
 
 
 # CORS Configuration
-# Railway: set this in Variables
-# Example:
-# CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174,https://jusoor-one.vercel.app
-CORS_ALLOWED_ORIGINS = config(
-    "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176,https://jusoor-one.vercel.app"
-).split(",")
+CORS_ALLOWED_ORIGINS = unique_values(
+    csv_config("CORS_ALLOWED_ORIGINS"),
+    LOCAL_ORIGINS if DEBUG else [],
+    FRONTEND_ORIGINS,
+    PRODUCTION_ORIGINS,
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
 
 # CSRF Configuration
-# Railway: set this in Variables
-# Example:
-# CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://localhost:5174,https://jusoor-one.vercel.app
-CSRF_TRUSTED_ORIGINS = config(
-    "CSRF_TRUSTED_ORIGINS",
-    default="http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176,https://jusoor-one.vercel.app"
-).split(",")
+CSRF_TRUSTED_ORIGINS = unique_values(
+    csv_config("CSRF_TRUSTED_ORIGINS"),
+    LOCAL_ORIGINS if DEBUG else [],
+    FRONTEND_ORIGINS,
+    PRODUCTION_ORIGINS,
+)
 
 
 # JWT Settings

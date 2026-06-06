@@ -17,6 +17,7 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ServiceOrderViewSet(viewsets.ModelViewSet):
     """ViewSet for managing service orders"""
+    queryset = ServiceOrder.objects.all()
     serializer_class = ServiceOrderSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status']
@@ -29,8 +30,12 @@ class ServiceOrderViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return ServiceOrder.objects.none()
         if self.action in ['upload_receipt', 'upload_document', 'submit']:
             return ServiceOrder.objects.all()
+        if not self.request.user.is_authenticated:
+            return ServiceOrder.objects.none()
         return ServiceOrder.objects.filter(user=self.request.user)
     
     def get_serializer_class(self):

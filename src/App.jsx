@@ -38,10 +38,7 @@ import {
   AlertCircle,
   TrendingUp,
   Building2,
-  HandCoins,
   Globe,
-  MousePointerClick,
-  ClipboardList,
   FileCheck,
   Rocket,
   HelpCircle,
@@ -54,11 +51,7 @@ import {
   Star,
   X,
   Loader,
-  BookOpen,
-  DollarSign,
-  CheckCircle,
-  ExternalLink,
-  Info
+  CheckCircle
 } from 'lucide-react';
 
 // ==========================================
@@ -317,27 +310,100 @@ const FAQS = [
 const STEPS = [
   {
     id: 1,
-    title: "اختر الخدمة وادفع",
-    description: "اختر الخدمة المناسبة وادفع بسهولة عبر PalPay",
-    icon: MousePointerClick
+    label: "اختيار المنحة",
+    title: "نحدد الطريق",
+    description: "تبدأ بمنحة أو خدمة واضحة، ونحوّل هدفك إلى متطلبات قابلة للتنفيذ بدل قائمة طويلة مربكة.",
+    duration: "10 دقائق",
+    output: "خطة تقديم مختصرة",
+    bullets: ["الموعد النهائي والمتطلبات الأساسية", "ما لديك وما ينقصك", "أول خطوة منطقية حسب وضعك"],
+    icon: Search,
+    accent: "blue"
   },
   {
     id: 2,
-    title: "املأ استمارة التقديم",
-    description: "أكمل بياناتك في الاستمارة بخطوات بسيطة",
-    icon: ClipboardList
+    label: "تجهيز المعلومات",
+    title: "تسلّمنا موادك",
+    description: "ترفع معلوماتك والملفات المتوفرة مرة واحدة، ونطلب الناقص فقط حتى لا تعيد نفس التفاصيل أكثر من مرة.",
+    duration: "15 دقيقة",
+    output: "ملف منظم",
+    bullets: ["السيرة أو بياناتها الأساسية", "الشهادات والكشوفات المتوفرة", "ملاحظاتك عن التخصص والجامعة"],
+    icon: Upload,
+    accent: "emerald"
   },
   {
     id: 3,
-    title: "نحن نجهز ملفك",
-    description: "فريقنا المتخصص يعمل على إعداد ملفاتك خلال 48-72 ساعة",
-    icon: FileCheck
+    label: "صياغة ومراجعة",
+    title: "نراجع ونبني الملف",
+    description: "نشتغل على السيرة، رسالة التحفيز، وترتيب الطلب حسب متطلبات الجهة، بصياغة واضحة بدون مبالغة.",
+    duration: "24-72 ساعة",
+    output: "مسودة قابلة للمراجعة",
+    bullets: ["اتساق القصة بين المستندات", "نقاط القوة التي تستحق الظهور", "تنبيه مبكر لأي نقص أو مخاطرة"],
+    icon: FileCheck,
+    accent: "amber"
   },
   {
     id: 4,
-    title: "تقديم ومتابعة",
-    description: "تتبع حالة طلبك واحصل على القبول",
-    icon: Rocket
+    label: "اعتماد ومتابعة",
+    title: "تراجع ثم ننهي",
+    description: "تشوف النسخة النهائية، نعالج ملاحظاتك، ونجهّزك للخطوة التالية قبل الموعد.",
+    duration: "قبل الموعد",
+    output: "ملف جاهز للتقديم",
+    bullets: ["نسخة نهائية مرتبة", "قائمة إرسال واضحة", "متابعة عند الحاجة"],
+    icon: Rocket,
+    accent: "slate"
+  }
+];
+
+const STEP_ACCENT_STYLES = {
+  blue: {
+    selected: "border-blue-500 bg-blue-50 shadow-sm shadow-blue-100/70",
+    icon: "bg-blue-600 text-white",
+    softIcon: "bg-blue-50 text-blue-600",
+    text: "text-blue-700",
+    pill: "bg-blue-50 text-blue-700 border-blue-100",
+    bar: "bg-blue-600"
+  },
+  emerald: {
+    selected: "border-emerald-500 bg-emerald-50 shadow-sm shadow-emerald-100/70",
+    icon: "bg-emerald-600 text-white",
+    softIcon: "bg-emerald-50 text-emerald-600",
+    text: "text-emerald-700",
+    pill: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    bar: "bg-emerald-600"
+  },
+  amber: {
+    selected: "border-amber-500 bg-amber-50 shadow-sm shadow-amber-100/70",
+    icon: "bg-amber-600 text-white",
+    softIcon: "bg-amber-50 text-amber-700",
+    text: "text-amber-700",
+    pill: "bg-amber-50 text-amber-700 border-amber-100",
+    bar: "bg-amber-600"
+  },
+  slate: {
+    selected: "border-slate-700 bg-slate-100 shadow-sm shadow-slate-200/70",
+    icon: "bg-slate-900 text-white",
+    softIcon: "bg-slate-100 text-slate-700",
+    text: "text-slate-800",
+    pill: "bg-slate-100 text-slate-700 border-slate-200",
+    bar: "bg-slate-900"
+  }
+};
+
+const WORKFLOW_ASSURANCES = [
+  {
+    title: "مراجعة قبل الاعتماد",
+    description: "ترى النسخة النهائية وتعلّق عليها قبل تثبيتها.",
+    icon: Shield
+  },
+  {
+    title: "تواصل مختصر",
+    description: "نطلب النواقص بوضوح ونرسل لك الخطوة التالية فقط.",
+    icon: MessageCircle
+  },
+  {
+    title: "بدون قوالب جاهزة",
+    description: "الصياغة مبنية على قصتك ومتطلبات المنحة، لا نص عام لكل المتقدمين.",
+    icon: FileText
   }
 ];
 
@@ -690,7 +756,7 @@ function ServicesSection({ onSelectService, onNavigateToScholarships }) {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 whileHover={{ y: -4 }}
-                className={`group relative bg-white rounded-2xl border transition-all duration-300 flex flex-col ${
+                className={`group relative bg-white hover:bg-slate-50 rounded-2xl border transition-all duration-300 flex flex-col ${
                   isHighlighted
                     ? 'border-slate-200 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/50'
                     : isGold
@@ -722,6 +788,20 @@ function ServicesSection({ onSelectService, onNavigateToScholarships }) {
                   <p className="text-slate-600 text-sm leading-relaxed mb-6">
                     {service.description}
                   </p>
+
+                  {isGold && (
+                    <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-right">
+                      <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white text-amber-700 shadow-sm">
+                        <RefreshCcw className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-amber-900">استرداد في حال الرفض</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-amber-800">
+                          إذا تم رفض طلبك بعد التقديم، يمكنك طلب الاسترداد حسب شروط الخدمة.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Divider */}
                   <div className={`h-px mb-6 ${isGold ? 'bg-gradient-to-r from-amber-200 via-amber-100 to-transparent' : 'bg-slate-100'}`} />
@@ -773,10 +853,7 @@ function ServicesSection({ onSelectService, onNavigateToScholarships }) {
                   </motion.button>
                 </div>
 
-                {/* Subtle accent border on hover for highlighted card */}
-                {isHighlighted && (
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-900/0 to-slate-900/0 group-hover:from-slate-900/5 group-hover:to-slate-900/5 transition-all duration-500 pointer-events-none" />
-                )}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-900/0 to-slate-900/0 group-hover:from-slate-900/5 group-hover:to-slate-900/5 transition-all duration-500 pointer-events-none" />
               </motion.div>
             );
           })}
@@ -1110,116 +1187,198 @@ function ScholarshipsSection({ onViewAll, onScholarshipSelect }) {
 
 // How It Works Section
 function HowItWorksSection({ onNavigate }) {
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const activeStep = STEPS[activeStepIndex];
+  const ActiveIcon = activeStep.icon;
+  const activeStyles = STEP_ACCENT_STYLES[activeStep.accent];
+  const progressPercent = ((activeStepIndex + 1) / STEPS.length) * 100;
+
   return (
-    <section id="how-it-works" className="py-24 bg-white relative overflow-hidden">
-      {/* Subtle radial background accents */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-50/30 rounded-full blur-3xl opacity-40" />
-        <div className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-slate-50/40 rounded-full blur-3xl opacity-40" />
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <motion.span
-            initial={{ opacity: 0, y: 8 }}
+    <section id="how-it-works" className="py-20 sm:py-24 bg-slate-50/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-10 lg:gap-14 items-start">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 text-slate-700 rounded-full text-xs font-semibold mb-5 tracking-wide"
+            transition={{ duration: 0.5 }}
           >
-            <span className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
-            كيف نعمل
-          </motion.span>
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-full text-xs font-semibold mb-5 tracking-wide">
+              <span className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+              كيف نعمل
+            </span>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4 font-serif tracking-tight"
-          >
-            رحلتك نحو القبول في{' '}
-            <span className="text-blue-600">٤ خطوات</span>
-          </motion.h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-5 font-serif tracking-tight">
+              من أول سؤال إلى ملف جاهز للتقديم
+            </h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.15 }}
-            className="text-slate-600 max-w-xl mx-auto text-base leading-relaxed"
-          >
-            نبسط لك عملية التقديم على المنح بخطوات واضحة وسهلة
-          </motion.p>
-        </div>
+            <p className="text-slate-600 max-w-xl text-base leading-relaxed">
+              كل خطوة لها مخرج واضح: نحدد المطلوب، نرتب ملفاتك، نراجع الصياغة، ثم نسلّمك نسخة تعرف بالضبط كيف تستخدمها.
+            </p>
 
-        {/* Process Steps with connecting line */}
-        <div className="relative">
-          {/* Subtle connecting line - desktop only */}
-          <div className="hidden lg:block absolute top-6 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+            <div className="mt-8 space-y-3">
+              {WORKFLOW_ASSURANCES.map((item) => {
+                const Icon = item.icon;
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {STEPS.map((step, index) => {
-              const Icon = step.icon;
-              const isFirst = index === 0;
+                return (
+                  <div key={item.title} className="flex items-start gap-3 border-b border-slate-200 pb-3 last:border-b-0 last:pb-0">
+                    <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-4 h-4 text-slate-700" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-              return (
-                <motion.div
-                  key={step.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className={`group relative bg-white rounded-2xl p-7 transition-all duration-300 ${
-                    isFirst
-                      ? 'border border-blue-200'
-                      : 'border border-slate-200 hover:border-blue-200'
-                  } hover:shadow-md hover:shadow-blue-100/30 hover:-translate-y-0.5`}
-                >
-                  {/* Step Number - Minimal */}
-                  <div className="absolute -top-2.5 -right-2.5 w-7 h-7 bg-white border border-slate-200 text-slate-600 rounded-full flex items-center justify-center font-semibold text-sm shadow-sm">
-                    {step.id}
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => onNavigate?.('scholarships')}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors"
+              >
+                <Search className="w-4 h-4" />
+                <span>استعرض المنح</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate?.('services')}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-800 rounded-lg text-sm font-bold hover:bg-slate-50 hover:border-slate-300 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                <span>جهّز مستنداتي</span>
+              </button>
+            </div>
+          </motion.div>
+
+          <div className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-3">
+              {STEPS.map((step, index) => {
+                const Icon = step.icon;
+                const styles = STEP_ACCENT_STYLES[step.accent];
+                const isActive = activeStepIndex === index;
+
+                return (
+                  <motion.button
+                    key={step.id}
+                    initial={{ opacity: 0, y: 14 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.06, duration: 0.35 }}
+                    whileHover={{ y: -2 }}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => setActiveStepIndex(index)}
+                    onMouseEnter={() => setActiveStepIndex(index)}
+                    onFocus={() => setActiveStepIndex(index)}
+                    className={`group min-h-[132px] rounded-lg border p-4 text-right transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                      isActive
+                        ? styles.selected
+                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isActive ? styles.icon : 'bg-slate-100 text-slate-500 group-hover:bg-white'
+                      }`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className={`text-xs font-bold ${isActive ? styles.text : 'text-slate-500'}`}>
+                            خطوة {toArabicIndic(step.id)}
+                          </span>
+                          {isActive && <span className={`w-2 h-2 rounded-full ${styles.bar}`} />}
+                        </div>
+                        <h3 className="mt-1 text-base font-bold text-slate-900">{step.title}</h3>
+                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600">{step.label}</p>
+                      </div>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStep.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+                className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6 lg:p-7 shadow-sm"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${activeStyles.icon}`}>
+                      <ActiveIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-bold ${activeStyles.text}`}>{activeStep.label}</p>
+                      <h3 className="mt-1 text-2xl font-bold text-slate-900">{activeStep.title}</h3>
+                    </div>
                   </div>
 
-                  {/* Icon Container */}
-                  <div className="w-14 h-14 mb-5 bg-blue-50 rounded-xl flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-blue-600" />
+                  <span className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-bold ${activeStyles.pill}`}>
+                    <Clock className="w-4 h-4" />
+                    {activeStep.duration}
+                  </span>
+                </div>
+
+                <p className="mt-5 text-slate-600 leading-relaxed">{activeStep.description}</p>
+
+                <div className="mt-6">
+                  <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-500">
+                    <span>تقدّم الرحلة</span>
+                    <span>خطوة {toArabicIndic(activeStep.id)} من {toArabicIndic(STEPS.length)}</span>
                   </div>
+                  <div className="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <motion.div
+                      className={`h-full rounded-full ${activeStyles.bar}`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercent}%` }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                </div>
 
-                  {/* Title */}
-                  <h3 className="text-lg font-bold text-slate-900 mb-2.5">
-                    {step.title}
-                  </h3>
+                <dl className="mt-6 grid sm:grid-cols-2 border-y border-slate-200">
+                  <div className="py-4 sm:border-l sm:border-slate-200 sm:pl-5">
+                    <dt className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                      <Clock className="w-4 h-4" />
+                      الوقت المتوقع
+                    </dt>
+                    <dd className="mt-1 text-lg font-bold text-slate-900">{activeStep.duration}</dd>
+                  </div>
+                  <div className="py-4 sm:pr-5">
+                    <dt className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                      <CheckCircle className="w-4 h-4" />
+                      المخرج العملي
+                    </dt>
+                    <dd className="mt-1 text-lg font-bold text-slate-900">{activeStep.output}</dd>
+                  </div>
+                </dl>
 
-                  {/* Description */}
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    {step.description}
-                  </p>
-                </motion.div>
-              );
-            })}
+                <div className="mt-6">
+                  <p className="text-sm font-bold text-slate-900">نراجع هنا</p>
+                  <ul className="mt-3 grid gap-3">
+                    {activeStep.bullets.map((item) => (
+                      <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-slate-700">
+                        <span className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${activeStyles.softIcon}`}>
+                          <Check className="w-3.5 h-3.5" />
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
-
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="text-center mt-16"
-        >
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="button"
-            onClick={() => onNavigate?.('scholarships')}
-            className="inline-flex items-center gap-3 px-8 py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-base shadow-md shadow-blue-200/50 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200/60 transition-all duration-300"
-          >
-            <span>ابدأ رحلتك الآن</span>
-            <ArrowLeft className="w-5 h-5" />
-          </motion.button>
-        </motion.div>
       </div>
     </section>
   );
@@ -1688,68 +1847,68 @@ function PartnersSection() {
 // Comparison Section
 function ComparisonSection() {
   return (
-    <section className="py-24 bg-white">
+    <section className="py-16 sm:py-20 lg:py-24 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+        <div className="text-center mb-10 sm:mb-14 lg:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 sm:mb-4">
             لماذا تختار <span className="text-blue-600">جسور</span>؟
           </h2>
-          <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+          <p className="text-slate-500 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
             مقارنة واضحة توضح الفرق بين الطريقة التقليدية ومنصة جسور
           </p>
         </div>
 
         {/* Comparison Grid */}
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Traditional */}
-          <div className="bg-slate-50 rounded-2xl p-8 border-2 border-slate-200">
-            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-slate-200">
-              <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
-                <Search className="w-6 h-6 text-slate-500" />
+          <div className="order-2 bg-slate-50 rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 border-2 border-slate-200">
+            <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-8 pb-4 sm:pb-6 border-b border-slate-200">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
+                <Search className="w-5 h-5 sm:w-6 sm:h-6 text-slate-500" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-slate-800">الطريقة التقليدية</h3>
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800">الطريقة التقليدية</h3>
                 <p className="text-sm text-slate-600 mt-1">بدون دعم أو تنظيم</p>
               </div>
             </div>
 
-            <div className="space-y-5">
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <X className="w-4 h-4 text-red-600" strokeWidth={2.5} />
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">البحث عن المنح</p>
                   <p className="text-slate-600 text-sm leading-relaxed">ساعات طويلة بين المواقع المختلفة</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <X className="w-4 h-4 text-red-600" strokeWidth={2.5} />
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">المواعيد النهائية</p>
                   <p className="text-slate-600 text-sm leading-relaxed">ضياع المواعيد أو التأخر في التقديم</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <X className="w-4 h-4 text-red-600" strokeWidth={2.5} />
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">إعداد الملفات</p>
                   <p className="text-slate-600 text-sm leading-relaxed">ملفات غير احترافية أو ناقصة</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <X className="w-4 h-4 text-red-600" strokeWidth={2.5} />
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">المتابعة والإرشاد</p>
                   <p className="text-slate-600 text-sm leading-relaxed">صعوبة المتابعة بدون دعم</p>
                 </div>
@@ -1758,53 +1917,53 @@ function ComparisonSection() {
           </div>
 
           {/* Jusoor */}
-          <div className="bg-white rounded-2xl p-8 border-2 border-blue-600 shadow-xl shadow-blue-100">
-            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-blue-100">
-              <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
-                <Check className="w-6 h-6 text-white" />
+          <div className="order-1 bg-white rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 border-2 border-blue-600 shadow-lg sm:shadow-xl shadow-blue-100">
+            <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-8 pb-4 sm:pb-6 border-b border-blue-100">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                <Check className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-slate-800">منصة جسور</h3>
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800">منصة جسور</h3>
                 <p className="text-sm text-slate-600 mt-1">حل متكامل واحترافي</p>
               </div>
             </div>
 
-            <div className="space-y-5">
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">البحث عن المنح</p>
                   <p className="text-slate-600 text-sm leading-relaxed">قائمة موحدة ومحدثة باستمرار</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">المواعيد النهائية</p>
                   <p className="text-slate-600 text-sm leading-relaxed">تنبيهات واضحة وتتابع منظم</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">إعداد الملفات</p>
                   <p className="text-slate-600 text-sm leading-relaxed">تجهيز احترافي متكامل</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" strokeWidth={2.5} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-semibold text-slate-800 text-sm mb-1">المتابعة والإرشاد</p>
                   <p className="text-slate-600 text-sm leading-relaxed">مرافقة حتى اكتمال التقديم</p>
                 </div>
@@ -1812,9 +1971,9 @@ function ComparisonSection() {
             </div>
 
             {/* Badge */}
-            <div className="mt-8 pt-6 border-t border-blue-100">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold">
-                <Star className="w-4 h-4 fill-current" />
+            <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-blue-100">
+              <div className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-semibold">
+                <Star className="w-4 h-4 fill-current flex-shrink-0" />
                 الخيار الأفضل للطلاب الطموحين
               </div>
             </div>
@@ -2252,8 +2411,22 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [pendingSection, setPendingSection] = useState(null);
 
+  const pushPageHistory = (page) => {
+    const url = page === 'home'
+      ? `${window.location.pathname}${window.location.search}`
+      : `#${page}`;
+    const isSameUrl = page === 'home'
+      ? !window.location.hash
+      : window.location.hash === `#${page}`;
+
+    if (window.history.state?.page !== page || !isSameUrl) {
+      window.history.pushState({ page }, '', url);
+    }
+  };
+
   const handleNavigate = (sectionId) => {
     if (sectionId === 'scholarships') {
+      pushPageHistory('scholarships');
       setPendingSection(null);
       setCurrentPage('scholarships');
       setActiveSection('scholarships');
@@ -2262,6 +2435,7 @@ function App() {
     }
 
     if (sectionId === 'contact') {
+      pushPageHistory('contact');
       setPendingSection(null);
       setCurrentPage('contact');
       setActiveSection('contact');
@@ -2269,10 +2443,33 @@ function App() {
       return;
     }
 
+    if (currentPage !== 'home') {
+      pushPageHistory('home');
+    }
+
     setCurrentPage('home');
     setActiveSection(sectionId);
     setPendingSection(sectionId);
   };
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const page = event.state?.page || 'home';
+
+      setPendingSection(null);
+      setSelectedService(null);
+      setSelectedScholarship(null);
+      setCurrentPage(page);
+      setActiveSection(page === 'home' ? 'home' : page);
+    };
+
+    if (!window.history.state?.page) {
+      window.history.replaceState({ page: currentPage }, '', window.location.href);
+    }
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   useEffect(() => {
     if (currentPage !== 'home' || !pendingSection) return;
@@ -2329,9 +2526,9 @@ function App() {
 
           <main>
             <Hero onNavigate={handleNavigate} />
-            <ScholarshipsSection onViewAll={() => setCurrentPage('scholarships')} onScholarshipSelect={setSelectedScholarship} />
+            <ScholarshipsSection onViewAll={() => handleNavigate('scholarships')} onScholarshipSelect={setSelectedScholarship} />
             <ComparisonSection />
-            <ServicesSection onSelectService={setSelectedService} onNavigateToScholarships={() => setCurrentPage('scholarships')} />
+            <ServicesSection onSelectService={setSelectedService} onNavigateToScholarships={() => handleNavigate('scholarships')} />
             <HowItWorksSection onNavigate={handleNavigate} />
             <FAQSection />
             <PartnersSection />

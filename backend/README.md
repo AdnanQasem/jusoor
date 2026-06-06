@@ -134,13 +134,30 @@ const scholarships = await fetch('http://localhost:8000/api/scholarships/', {
 
 ## Production Deployment
 
-1. Set `DEBUG=False` in `.env`
-2. Configure proper `SECRET_KEY`
-3. Set up PostgreSQL with strong credentials
-4. Configure allowed hosts
-5. Use gunicorn or uwsgi for WSGI server
-6. Set up nginx for reverse proxy
-7. Configure SSL/TLS
+The repository includes a root `Procfile` for Railway:
+
+```bash
+cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn amdist_backend.wsgi:application --bind 0.0.0.0:$PORT
+```
+
+Set these Railway variables before deploying:
+
+```env
+SECRET_KEY=your-long-random-secret
+DEBUG=False
+ALLOWED_HOSTS=jusoor-production.up.railway.app
+CORS_ALLOWED_ORIGINS=https://jusoor-one.vercel.app
+CSRF_TRUSTED_ORIGINS=https://jusoor-one.vercel.app,https://jusoor-production.up.railway.app
+FRONTEND_URL=https://jusoor-one.vercel.app
+```
+
+Attach a Railway PostgreSQL database so `DATABASE_URL` is available. If `DATABASE_URL` is missing, Django falls back to SQLite for local development only.
+
+For the Vite frontend production build, `.env.production` points `VITE_API_BASE_URL` to:
+
+```env
+VITE_API_BASE_URL=https://jusoor-production.up.railway.app/api
+```
 
 ## Project Structure
 

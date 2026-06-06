@@ -30,3 +30,4 @@ class FAQSerializer(serializers.ModelSerializer):
         model = FAQ
         fields = ['id', 'category', 'question', 'answer', 'order', 'is_active']
         read_only_fields = ['id', 'created_at', 'updated_at']
+        ref_name = 'ContactFAQ'

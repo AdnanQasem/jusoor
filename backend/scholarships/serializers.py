@@ -9,6 +9,7 @@ class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
         fields = ['id', 'category', 'category_display', 'question', 'answer', 'order', 'is_active']
+        ref_name = 'ScholarshipFAQ'
 
 
 class ScholarshipTagSerializer(serializers.ModelSerializer):
@@ -23,7 +24,7 @@ class ScholarshipSerializer(serializers.ModelSerializer):
     """Serializer for Scholarship model"""
     days_remaining = serializers.IntegerField(read_only=True)
     is_expired = serializers.BooleanField(read_only=True)
-    country_display = serializers.CharField(source='get_country_display', read_only=True)
+    country_display = serializers.CharField(source='country', read_only=True)
     scholarship_type_display = serializers.CharField(source='get_scholarship_type_display', read_only=True)
     funding_type_display = serializers.CharField(source='get_funding_type_display', read_only=True)
     faqs = FAQSerializer(many=True, read_only=True)
@@ -31,7 +32,8 @@ class ScholarshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scholarship
         fields = [
-            'id', 'title', 'title_en', 'university', 'country', 'country_code',
+            'id', 'title', 'title_en', 'university', 'country',
+            'country_display', 'country_code',
             'scholarship_type', 'scholarship_type_display', 'funding_type',
             'funding_type_display', 'description', 'fields', 'stipend', 'benefits',
             'deadline', 'start_date', 'days_remaining', 'is_expired',
