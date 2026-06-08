@@ -259,7 +259,7 @@ html {
 }
 
 .animate-marquee-rtl {
-  animation: marquee-rtl 30s linear infinite;
+  animation: marquee-rtl 21s linear infinite;
 }
 
 @keyframes slideInRight {

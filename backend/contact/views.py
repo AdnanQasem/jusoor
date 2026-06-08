@@ -52,6 +52,7 @@ class FAQViewSet(viewsets.ReadOnlyModelViewSet):
 class ContactSettingsViewSet(viewsets.ViewSet):
     """Public endpoint for admin-managed contact page details."""
 
+    serializer_class = ContactSettingsSerializer
     permission_classes = [permissions.AllowAny]
 
     def list(self, request):
